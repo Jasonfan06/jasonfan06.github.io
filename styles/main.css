@@ -1,0 +1,139 @@
+/* ===================================
+   Main Styles & Global Variables
+   =================================== */
+
+:root {
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --spacing-section: 4rem;
+    --spacing-element: 2rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    line-height: 1.6;
+    transition: var(--transition-smooth);
+}
+
+/* Override LaTeX.css max-width for better responsiveness */
+body > main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Section Containers */
+.section-container {
+    margin: var(--spacing-section) 0;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.section-container h2 {
+    margin-bottom: var(--spacing-element);
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+}
+
+.section-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-container:hover h2::after {
+    width: 100%;
+}
+
+/* Links */
+a {
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+a:hover {
+    transform: translateY(-1px);
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for multiple elements */
+.slide-up {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.slide-up:nth-child(1) { animation-delay: 0.1s; }
+.slide-up:nth-child(2) { animation-delay: 0.2s; }
+.slide-up:nth-child(3) { animation-delay: 0.3s; }
+.slide-up:nth-child(4) { animation-delay: 0.4s; }
+.slide-up:nth-child(5) { animation-delay: 0.5s; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body > main {
+        padding: 0 1.5rem;
+    }
+    
+    .section-container {
+        margin: 3rem 0;
+    }
+    
+    .section-container h2 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body > main {
+        padding: 0 1rem;
+    }
+    
+    .section-container {
+        margin: 2.5rem 0;
+    }
+    
+    .section-container h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .nav-container,
+    .dark-toggle,
+    .scroll-indicator {
+        display: none;
+    }
+    
+    .section-container {
+        page-break-inside: avoid;
+    }
+}
+
+

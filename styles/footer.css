@@ -1,0 +1,69 @@
+/* ===================================
+   Footer Styles
+   =================================== */
+
+.footer-container {
+    margin-top: 6rem;
+    padding: 3rem 0 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+body.latex-dark .footer-container {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-content {
+    opacity: 0.7;
+    font-size: 0.95rem;
+}
+
+.footer-content p {
+    margin: 0.5rem 0;
+}
+
+.footer-content a {
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    border-bottom: 1px solid transparent;
+}
+
+.footer-content a:hover {
+    border-bottom-color: currentColor;
+    opacity: 1;
+}
+
+.footer-note {
+    margin-top: 1.5rem !important;
+    font-style: italic;
+    font-size: 0.9rem;
+    opacity: 0.6;
+}
+
+/* Responsive Footer */
+@media (max-width: 768px) {
+    .footer-container {
+        margin-top: 4rem;
+        padding: 2rem 0 1.5rem;
+    }
+    
+    .footer-content {
+        font-size: 0.9rem;
+    }
+    
+    .footer-note {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        margin-top: 3rem;
+    }
+    
+    .footer-content {
+        font-size: 0.85rem;
+    }
+}
+
+

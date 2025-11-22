@@ -1,0 +1,155 @@
+/* ===================================
+   Header & Hero Section Styles
+   =================================== */
+
+.header-container {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+.header-content {
+    max-width: 700px;
+}
+
+.header-title {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.author {
+    font-size: 1.25rem;
+    margin: 1rem 0 2rem;
+    opacity: 0.85;
+}
+
+.header-subtitle {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.header-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.header-link {
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: var(--transition-smooth);
+    font-weight: 500;
+}
+
+.header-link:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+body.latex-dark .header-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.separator {
+    opacity: 0.3;
+    user-select: none;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+}
+
+.scroll-arrow {
+    font-size: 2rem;
+    opacity: 0.4;
+    display: block;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    40% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+    60% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+/* Fade-in animation for header */
+.fade-in {
+    animation: fadeIn 1.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Header */
+@media (max-width: 768px) {
+    .header-container {
+        min-height: 70vh;
+        margin-bottom: 3rem;
+    }
+    
+    .header-title {
+        font-size: 2.5rem;
+    }
+    
+    .author {
+        font-size: 1.1rem;
+    }
+    
+    .header-links {
+        gap: 0.25rem;
+    }
+    
+    .header-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        min-height: 60vh;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+    }
+    
+    .author {
+        font-size: 1rem;
+    }
+    
+    .scroll-indicator {
+        bottom: 1rem;
+    }
+}
+
+

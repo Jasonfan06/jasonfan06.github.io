@@ -1,0 +1,90 @@
+/* ===================================
+   About Section Styles
+   =================================== */
+
+.about-content {
+    line-height: 1.8;
+}
+
+.about-content p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+.about-content p:last-of-type {
+    margin-bottom: 0;
+}
+
+.about-content strong {
+    font-weight: 600;
+}
+
+.about-content em {
+    font-style: italic;
+}
+
+/* Abstract box for research interests */
+.about-content .abstract {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border-left: 3px solid currentColor;
+    background: rgba(0, 0, 0, 0.02);
+    transition: var(--transition-smooth);
+}
+
+body.latex-dark .about-content .abstract {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.about-content .abstract:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.about-content .abstract h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.about-content .abstract ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+    list-style-position: outside;
+    text-align: left;
+}
+
+.about-content .abstract li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.about-content .abstract li:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive About Section */
+@media (max-width: 768px) {
+    .about-content p {
+        text-align: left;
+    }
+    
+    .about-content .abstract {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-content .abstract {
+        padding: 1rem;
+        margin: 1.5rem 0;
+    }
+    
+    .about-content .abstract h3 {
+        font-size: 1.1rem;
+    }
+}
+
+

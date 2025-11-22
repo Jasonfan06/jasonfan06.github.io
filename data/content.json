@@ -1,0 +1,47 @@
+{
+  "personal": {
+    "name": "Jason Fan",
+    "title": "Physics Undergraduate @ UC Berkeley",
+    "email": "jasonfan@berkeley.edu",
+    "github": "https://github.com/jasonfan06",
+    "linkedin": "https://linkedin.com/in/jason-j-fan"
+  },
+  "about": {
+    "paragraphs": [
+      "I'm an undergraduate physics student at <strong>UC Berkeley</strong>. My current research focuses on <em>condensed matter physics</em>, specifically on scanning tunneling microscopy and graphenes.",
+      "Beyond research, I'm passionate about scientific communication and making physics accessible to broader audiences. I believe that the beauty of physics lies in its power to reveal the hidden order of nature."
+    ],
+    "researchInterests": [
+      "Condensed matter",
+      "Quantum circuits",
+      "Strongly correlated electron systems",
+    ]
+  },
+  "projects": [
+    {
+      "title": "Heat Diffusion in Space-varying Heat Diffusivity Materials",
+      "date": "Fall 2025",
+      "description": "Created a baseline for evaluating the stability of explicit vs. implicit methods in solving the 2D heat equation in space-varying heat diffusivity materials.",
+      "tags": ["Python", "NumPy", "Numerical Methods"],
+      "github": "https://github.com/Jasonfan06/Physics_77_Heat_Diffusion",
+      "demo": null
+    }
+  ],
+  "experience": [
+    {
+      "title": "Undergraduate Researcher",
+      "organization": "UC Berkeley, Crommie Group",
+      "date": "Fall 2025 - Present",
+      "responsibilities": [
+        "Scanning Tunneling Microscopy and its applications on graphenes.",
+        "hBN and graphene stacks.",
+        "Thermal annealing and plasma etching.",
+        "Atomic force microscopy."
+      ]
+    }
+  ],
+  "footer": {
+    "quote": "The most incomprehensible thing about the world is that it is comprehensible.",
+    "quoteAuthor": "Albert Einstein"
+  }
+}

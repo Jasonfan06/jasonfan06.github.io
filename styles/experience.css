@@ -1,0 +1,170 @@
+/* ===================================
+   Experience Section Styles
+   =================================== */
+
+.experience-timeline {
+    position: relative;
+    margin-top: 2rem;
+}
+
+/* Timeline line */
+.experience-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+        to bottom,
+        currentColor 0%,
+        currentColor 50%,
+        transparent 100%
+    );
+    opacity: 0.2;
+}
+
+.experience-item {
+    position: relative;
+    padding-left: 2.5rem;
+    margin-bottom: 3rem;
+    padding-bottom: 1rem;
+}
+
+.experience-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Timeline dot */
+.experience-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 0.5rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    border: 2px solid var(--bg-color, #fff);
+    transition: var(--transition-smooth);
+}
+
+body.latex-dark .experience-item::before {
+    border-color: #151515;
+}
+
+.experience-item:hover::before {
+    transform: scale(1.4);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+body.latex-dark .experience-item:hover::before {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+.experience-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1.5rem;
+}
+
+.experience-title-group {
+    flex: 1;
+}
+
+.experience-title {
+    font-size: 1.3rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.experience-organization {
+    margin: 0;
+    font-style: italic;
+    opacity: 0.75;
+    font-size: 1.05rem;
+}
+
+.experience-date {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    white-space: nowrap;
+    font-family: monospace;
+    font-weight: 500;
+}
+
+.experience-description {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.experience-description li {
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    opacity: 0.9;
+}
+
+.experience-description li:last-child {
+    margin-bottom: 0;
+}
+
+/* Hover effect for entire item */
+.experience-item {
+    transition: var(--transition-smooth);
+}
+
+.experience-item:hover {
+    transform: translateX(5px);
+}
+
+/* Responsive Experience */
+@media (max-width: 768px) {
+    .experience-timeline::before {
+        left: 0;
+    }
+    
+    .experience-item {
+        padding-left: 2rem;
+    }
+    
+    .experience-item::before {
+        left: -4px;
+    }
+    
+    .experience-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .experience-date {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .experience-item {
+        padding-left: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .experience-title {
+        font-size: 1.15rem;
+    }
+    
+    .experience-organization {
+        font-size: 0.95rem;
+    }
+    
+    .experience-description {
+        padding-left: 1.25rem;
+    }
+    
+    .experience-description li {
+        font-size: 0.95rem;
+    }
+}
+
+

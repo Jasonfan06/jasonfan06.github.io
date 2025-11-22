@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Jason Fan</title>
+    <link rel="stylesheet" href="https://latex.vercel.app/style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .error-container {
+            max-width: 600px;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+            margin: 1rem 0 2rem;
+        }
+        
+        .error-description {
+            margin: 1rem 0 2rem;
+            opacity: 0.8;
+        }
+        
+        .home-link {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border: 2px solid currentColor;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .home-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .equation {
+            margin: 2rem 0;
+            font-family: 'Latin Modern Roman', serif;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-message">Page Not Found</h2>
+        
+        <p class="error-description">
+            The page you're looking for doesn't exist in this universe. 
+            Perhaps it collapsed into a quantum superposition of states?
+        </p>
+        
+        <div class="equation">
+            <em>|ψ⟩ = α|found⟩ + β|not found⟩</em>
+        </div>
+        
+        <p class="error-description">
+            Let's collapse the wave function and return you home.
+        </p>
+        
+        <a href="/" class="home-link">Return Home</a>
+    </div>
+    
+    <script>
+        // Auto-redirect after 10 seconds
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 10000);
+    </script>
+</body>
+</html>
+
+
