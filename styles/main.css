@@ -25,9 +25,17 @@ body {
 }
 
 /* Override LaTeX.css max-width for better responsiveness */
+body,
+body > main,
+main,
+article,
+section {
+    max-width: 1100px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
 body > main {
-    max-width: 1400px;
-    margin: 0 auto;
     padding: 0 2rem;
 }
 
