@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JASON_FAN // TERMINAL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --amber: #ffb000;
+            --amber-dim: #bd8200;
+            --bg-color: #111;
+            --scanline-color: rgba(0, 0, 0, 0.5);
+            --glitch-offset: 2px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: var(--amber);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            overflow: hidden; /* Keeps the CRT feel contained */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- CRT FRAME & SCREEN --- */
+        .monitor {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background: var(--bg-color);
+            overflow-y: auto; /* Content scrolls inside the screen */
+            border: 2px solid var(--amber-dim);
+            box-shadow: 0 0 20px rgba(255, 176, 0, 0.2);
+        }
+
+        .content-wrapper {
+            padding: 40px;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* --- SCANLINES & EFFECTS --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Slight flicker animation */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.9; }
+            15% { opacity: 0.95; }
+            20% { opacity: 0.99; }
+            100% { opacity: 0.97; }
+        }
+
+        .monitor::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-size: 3rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px var(--amber);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--amber-dim);
+            padding-bottom: 5px;
+            margin-top: 40px;
+            text-transform: uppercase;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-shadow: 0 0 2px var(--amber-dim);
+        }
+
+        a {
+            color: var(--amber);
+            text-decoration: none;
+            border: 1px solid var(--amber);
+            padding: 2px 8px;
+            transition: 0.3s;
+            background: rgba(255, 176, 0, 0.05);
+        }
+
+        a:hover {
+            background: var(--amber);
+            color: var(--bg-color);
+            cursor: crosshair;
+        }
+
+        /* --- CHROMATIC ABERRATION ON HOVER --- */
+        .glitch-text:hover {
+            text-shadow: 
+                -2px 0 red, 
+                2px 0 blue;
+        }
+
+        /* --- LAYOUT COMPONENTS --- */
+        .status-bar {
+            border-bottom: 2px solid var(--amber);
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .nav-item {
+            border: 1px solid var(--amber);
+            padding: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: var(--amber);
+            color: var(--bg-color);
+        }
+
+        .project-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .project-item {
+            border-left: 2px solid var(--amber-dim);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        .project-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Mobile Adjustment */
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .content-wrapper { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div class="monitor">
+        <div class="content-wrapper">
+            
+            <div class="status-bar">
+                <span>SYS.STATUS: ONLINE</span>
+                <span>USER: JASON_FAN</span>
+                <span id="clock">00:00:00</span>
+            </div>
+
+            <header>
+                <h1 class="glitch-text">JASON FAN</h1>
+                <p>> UNDERGRADUATE PHYSICS // UC BERKELEY</p>
+                <p>> RESEARCHING CONDENSED MATTER & QUANTUM SYSTEMS</p>
+            </header>
+
+            <nav class="nav-grid">
+                <a href="#bio" class="nav-item">[ HOME ]</a>
+                <a href="#projects" class="nav-item">[ PROJECTS ]</a>
+                <a href="#research" class="nav-item">[ RESEARCH ]</a>
+                <a href="#contact" class="nav-item">[ CONTACT ]</a>
+            </nav>
+
+            <main>
+                <section id="bio">
+                    <h2>// 01_INTRODUCTION</h2>
+                    <p>Hi, I'm Jason! I'm an undergrad at UC Berkeley studying Physics.</p> 
+                    <p>I build models, write code, and analyze data. Currently focused on the intersection of computational physics and material science.</p>
+                </section>
+
+                <section id="projects">
+                    <h2>// 02_PROJECTS</h2>
+                    <ul class="project-list">
+                        <li class="project-item">
+                            <span class="project-title">Physics_77_Heat_Diffusion</span>
+                            <p>Numerical solver for heat equations using Python. Implementing ADI methods for 2D surfaces.</p>
+                            <a href="https://github.com/Jasonfan06/Physics_77_Heat_Diffusion" target="_blank">ACCESS REPO</a>
+                        </li>
+                        <li class="project-item">
+                            <span class="project-title">PCB Design</span>
+                            <p>Custom electronics and decorative PCB fabrication using KiCad.</p>
+                        </li>
+                        <li class="project-item">
+                            <span class="project-title">Data Analysis</span>
+                            <p>Statistical modeling and hypothesis testing in Python (Data 8/C8 stack).</p>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="research">
+                    <h2>// 03_OTHER_DATA</h2>
+                    <p>> SKILLS: Python, LaTeX, MATLAB, Arduino, KiCad.</p>
+                    <p>> INTERESTS: Table Tennis, Photography, Chinese Indie Music.</p>
+                </section>
+
+                <section id="contact">
+                    <h2>// 04_COMM_LINK</h2>
+                    <p>Initiate contact sequence via email or GitHub.</p>
+                    <br>
+                    <a href="mailto:your-email@berkeley.edu">SEND_EMAIL</a>
+                    <a href="https://github.com/Jasonfan06">GITHUB_PROFILE</a>
+                </section>
+            </main>
+
+            <footer style="margin-top: 50px; border-top: 1px dashed var(--amber-dim); padding-top: 10px; font-size: 0.8rem;">
+                <p>END OF LINE_</p>
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        // Simple clock for the status bar
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('clock').innerText = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body>
+</html>
