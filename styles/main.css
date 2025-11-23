@@ -24,6 +24,15 @@ body {
     transition: var(--transition-smooth);
 }
 
+/* Ensure media elements scale responsively */
+img,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 /* Override LaTeX.css max-width for better responsiveness */
 body,
 body > main,

@@ -54,8 +54,52 @@ body.latex-dark .project-card:hover {
     font-style: italic;
 }
 
+.project-with-media .project-body {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-top: 1rem;
+}
+
+.project-with-media .project-details {
+    flex: 1 1 0;
+}
+
+.project-with-media .project-media {
+    flex: 0 0 45%;
+    max-width: 420px;
+    margin: 0;
+}
+
+.project-with-media .project-video {
+    width: 100%;
+    display: block;
+    border-radius: 4px;
+    background: #000;
+}
+
+.project-with-media .project-media-caption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.75;
+    text-align: center;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .project-with-media .project-body {
+        flex-direction: column;
+    }
+    
+    .project-with-media .project-media {
+        width: 100%;
+        max-width: none;
+    }
+}
+
 .project-description {
     line-height: 1.7;
+    margin-top: 0;
     margin-bottom: 1.25rem;
     opacity: 0.9;
 }
