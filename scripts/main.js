@@ -7,6 +7,8 @@ import { loadComponents } from './components.js';
 import { primeDarkMode, initDarkMode } from './darkMode.js';
 import { initAnimations } from './animations.js';
 import { initSmoothScroll } from './smoothScroll.js';
+import { initRayTracing } from './rayTracing.js';
+import { initStarBackground } from './starBackground.js';
 import './themeButton.js';
 
 /**
@@ -16,6 +18,9 @@ async function init() {
     try {
         // Apply saved theme before components mount
         primeDarkMode();
+        
+        // Initialize star background
+        initStarBackground();
         
         // Load all HTML components
         await loadComponents();
@@ -28,6 +33,9 @@ async function init() {
         
         // Initialize smooth scrolling
         initSmoothScroll();
+        
+        // Initialize ray tracing effect
+        initRayTracing();
         
         console.log('✓ Site initialized successfully');
     } catch (error) {

@@ -11,14 +11,28 @@
 .project-card {
     padding: 1.75rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    /* G3 continuity - smooth iPhone-like corners */
+    border-radius: 24px;
     transition: var(--transition-smooth);
-    background: rgba(0, 0, 0, 0.01);
+    /* Glassmorphism effect - increased transparency */
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    /* Ray tracing setup */
+    position: relative;
+    overflow: hidden;
+    --mouse-x: 50%;
+    --mouse-y: 50%;
 }
 
 body.dark-theme .project-card {
     border-color: rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.02);
+    /* Glassmorphism for dark mode - increased transparency */
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .project-card:hover {
@@ -74,7 +88,8 @@ body.dark-theme .project-card:hover {
 .project-with-media .project-video {
     width: 100%;
     display: block;
-    border-radius: 4px;
+    /* Matching G3 continuity corners */
+    border-radius: 16px;
     background: #000;
 }
 
@@ -117,24 +132,29 @@ body.dark-theme .project-card:hover {
     padding: 0.25rem 0.75rem;
     font-size: 0.85rem;
     border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.03);
+    /* Smooth corners for tags */
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition: var(--transition-smooth);
     font-family: monospace;
 }
 
 body.dark-theme .tag {
     border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .tag:hover {
     transform: translateY(-2px);
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.12);
 }
 
 body.dark-theme .tag:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 /* Project Links */
@@ -207,6 +227,65 @@ body.dark-theme .tag:hover {
         font-size: 0.8rem;
         padding: 0.2rem 0.6rem;
     }
+}
+
+/* ===================================
+   Ray Tracing Light Effect
+   =================================== */
+
+.ray-tracing-light {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    z-index: 1;
+    /* Smooth radial gradient with more steps to prevent moiré */
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(255, 255, 255, 0.30) 8%,
+        rgba(255, 255, 255, 0.25) 16%,
+        rgba(255, 255, 255, 0.20) 24%,
+        rgba(255, 255, 255, 0.15) 32%,
+        rgba(255, 255, 255, 0.10) 40%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.03) 60%,
+        rgba(255, 255, 255, 0.01) 70%,
+        transparent 80%
+    );
+    mix-blend-mode: overlay;
+    filter: blur(60px);
+    will-change: transform, opacity;
+}
+
+body.dark-theme .ray-tracing-light {
+    /* Subtle light effect for dark mode with smooth falloff */
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.12) 10%,
+        rgba(255, 255, 255, 0.09) 20%,
+        rgba(255, 255, 255, 0.07) 30%,
+        rgba(255, 255, 255, 0.05) 40%,
+        rgba(255, 255, 255, 0.03) 50%,
+        rgba(255, 255, 255, 0.015) 60%,
+        rgba(255, 255, 255, 0.008) 70%,
+        transparent 85%
+    );
+    mix-blend-mode: screen;
+    filter: blur(50px);
+    opacity: 0.7;
+}
+
+/* Ensure content is above the light effect */
+.project-card > *:not(.ray-tracing-light) {
+    position: relative;
+    z-index: 2;
 }
 
 

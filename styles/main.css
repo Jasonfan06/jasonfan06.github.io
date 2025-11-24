@@ -22,13 +22,17 @@ html {
 body {
     font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI', sans-serif;
     line-height: 1.6;
-    background: #f7f4ef;
+    /* Subtle gradient background for glassmorphism effect */
+    background: linear-gradient(135deg, #f7f4ef 0%, #ebe6dc 50%, #f0ebe2 100%);
+    background-attachment: fixed;
     color: #1a1a1a;
     transition: var(--transition-smooth);
 }
 
 body.dark-theme {
-    background: #0f1014;
+    /* Star sky background - defined in starBackground.css */
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    background-attachment: fixed;
     color: #f5f7fa;
 }
 
