@@ -20,8 +20,16 @@ html {
 }
 
 body {
+    font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI', sans-serif;
     line-height: 1.6;
+    background: #f7f4ef;
+    color: #1a1a1a;
     transition: var(--transition-smooth);
+}
+
+body.dark-theme {
+    background: #0f1014;
+    color: #f5f7fa;
 }
 
 /* Ensure media elements scale responsively */
@@ -33,7 +41,7 @@ canvas {
     display: block;
 }
 
-/* Override LaTeX.css max-width for better responsiveness */
+/* Ensure content is centered on large screens */
 body,
 body > main,
 main,
@@ -81,6 +89,7 @@ body > main {
 a {
     transition: var(--transition-smooth);
     position: relative;
+    color: inherit;
 }
 
 a:hover {
@@ -143,7 +152,7 @@ a:hover {
 /* Print Styles */
 @media print {
     .nav-container,
-    .dark-toggle,
+    theme-button,
     .scroll-indicator {
         display: none;
     }

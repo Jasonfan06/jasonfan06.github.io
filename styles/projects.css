@@ -16,7 +16,7 @@
     background: rgba(0, 0, 0, 0.01);
 }
 
-body.latex-dark .project-card {
+body.dark-theme .project-card {
     border-color: rgba(255, 255, 255, 0.15);
     background: rgba(255, 255, 255, 0.02);
 }
@@ -27,7 +27,7 @@ body.latex-dark .project-card {
     border-color: rgba(0, 0, 0, 0.2);
 }
 
-body.latex-dark .project-card:hover {
+body.dark-theme .project-card:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.25);
 }
@@ -123,7 +123,7 @@ body.latex-dark .project-card:hover {
     font-family: monospace;
 }
 
-body.latex-dark .tag {
+body.dark-theme .tag {
     border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
 }
@@ -133,7 +133,7 @@ body.latex-dark .tag {
     background: rgba(0, 0, 0, 0.08);
 }
 
-body.latex-dark .tag:hover {
+body.dark-theme .tag:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 

@@ -32,7 +32,7 @@
     transition: var(--transition-smooth);
 }
 
-body.latex-dark .about-content .abstract {
+body.dark-theme .about-content .abstract {
     background: rgba(255, 255, 255, 0.03);
 }
 

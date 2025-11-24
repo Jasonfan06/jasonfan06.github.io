@@ -17,7 +17,7 @@
     animation: slideDown 0.6s ease-out 0.3s forwards;
 }
 
-body.latex-dark .nav-container {
+body.dark-theme .nav-container {
     background: rgba(21, 21, 21, 0.95);
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
@@ -80,37 +80,11 @@ body.latex-dark .nav-container {
     width: 100%;
 }
 
-/* Dark Mode Toggle */
-.dark-toggle {
-    background: none;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    cursor: pointer;
-    display: flex;
+theme-button {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition-smooth);
-    font-size: 1.25rem;
-}
-
-body.latex-dark .dark-toggle {
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.dark-toggle:hover {
-    transform: rotate(180deg) scale(1.1);
-    background: rgba(0, 0, 0, 0.05);
-}
-
-body.latex-dark .dark-toggle:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.toggle-icon {
-    display: block;
-    user-select: none;
+    flex-shrink: 0;
 }
 
 /* Responsive Navigation */
@@ -145,10 +119,8 @@ body.latex-dark .dark-toggle:hover {
         font-size: 1.1rem;
     }
     
-    .dark-toggle {
-        width: 32px;
-        height: 32px;
-        font-size: 1.1rem;
+    theme-button {
+        transform: scale(0.9);
     }
 }
 

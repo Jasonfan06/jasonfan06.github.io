@@ -9,7 +9,7 @@
     text-align: center;
 }
 
-body.latex-dark .footer-container {
+body.dark-theme .footer-container {
     border-top-color: rgba(255, 255, 255, 0.1);
 }
 

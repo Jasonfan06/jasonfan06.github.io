@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | Jason Fan</title>
-    <link rel="stylesheet" href="https://latex.vercel.app/style.css">
     <style>
+        :root {
+            color-scheme: light dark;
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -14,6 +17,17 @@
             min-height: 100vh;
             text-align: center;
             padding: 2rem;
+            font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI', sans-serif;
+            background: #f7f4ef;
+            color: #1a1a1a;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #0f1014;
+                color: #f5f7fa;
+            }
         }
         
         .error-container {
