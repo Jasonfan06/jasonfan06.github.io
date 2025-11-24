@@ -35,35 +35,84 @@
     opacity: 0.7;
 }
 
-.header-links {
+/* Container */
+.container {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    gap: 1.5rem;
     margin-top: 2rem;
 }
 
-.header-link {
+/* CTA Button */
+.cta {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    padding: 0;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: inherit;
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: var(--transition-smooth);
+    cursor: pointer;
+    overflow: hidden;
+    width: 50px;
+    transition: width 0.5s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-theme .cta {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.cta i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+}
+
+.button-text {
+    padding-right: 20px;
     font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.header-link:hover {
-    background: rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+.cta:hover {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-body.dark-theme .header-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+body.dark-theme .cta:hover {
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-.separator {
-    opacity: 0.3;
-    user-select: none;
+.cta:hover .button-text {
+    opacity: 1;
+}
+
+/* Individual button widths based on text length */
+.cta:nth-child(1):hover {
+    width: 115px; /* Email */
+}
+
+.cta:nth-child(2):hover {
+    width: 125px; /* GitHub */
+}
+
+.cta:nth-child(3):hover {
+    width: 135px; /* LinkedIn */
 }
 
 /* Scroll Indicator */
@@ -124,13 +173,31 @@ body.dark-theme .header-link:hover {
         font-size: 1.1rem;
     }
     
-    .header-links {
-        gap: 0.25rem;
+    .container {
+        gap: 1.25rem;
     }
     
-    .header-link {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.95rem;
+    .cta {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .cta i {
+        min-width: 45px;
+        height: 45px;
+        font-size: 1.15rem;
+    }
+    
+    .cta:nth-child(1):hover {
+        width: 105px; /* Email */
+    }
+    
+    .cta:nth-child(2):hover {
+        width: 115px; /* GitHub */
+    }
+    
+    .cta:nth-child(3):hover {
+        width: 125px; /* LinkedIn */
     }
 }
 
@@ -145,6 +212,33 @@ body.dark-theme .header-link:hover {
     
     .author {
         font-size: 1rem;
+    }
+    
+    .container {
+        gap: 1rem;
+    }
+    
+    .cta {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .cta i {
+        min-width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+    
+    .cta:nth-child(1):hover {
+        width: 100px; /* Email */
+    }
+    
+    .cta:nth-child(2):hover {
+        width: 108px; /* GitHub */
+    }
+    
+    .cta:nth-child(3):hover {
+        width: 118px; /* LinkedIn */
     }
     
     .scroll-indicator {

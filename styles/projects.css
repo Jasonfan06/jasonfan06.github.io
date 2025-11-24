@@ -235,51 +235,39 @@ body.dark-theme .tag:hover {
 
 .ray-tracing-light {
     position: absolute;
-    width: 600px;
-    height: 600px;
+    width: 500px;
+    height: 500px;
     pointer-events: none;
     transform: translate(-50%, -50%);
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
     opacity: 0;
     z-index: 1;
-    /* Smooth radial gradient with more steps to prevent moiré */
+    /* Radial gradient for light reflection - more intense */
     background: radial-gradient(
         circle at center,
-        rgba(255, 255, 255, 0.35) 0%,
-        rgba(255, 255, 255, 0.30) 8%,
-        rgba(255, 255, 255, 0.25) 16%,
-        rgba(255, 255, 255, 0.20) 24%,
-        rgba(255, 255, 255, 0.15) 32%,
-        rgba(255, 255, 255, 0.10) 40%,
-        rgba(255, 255, 255, 0.06) 50%,
-        rgba(255, 255, 255, 0.03) 60%,
-        rgba(255, 255, 255, 0.01) 70%,
-        transparent 80%
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.6) 15%,
+        rgba(255, 255, 255, 0.4) 25%,
+        rgba(255, 255, 255, 0.2) 40%,
+        transparent 60%
     );
-    mix-blend-mode: overlay;
-    filter: blur(60px);
-    will-change: transform, opacity;
+    mix-blend-mode: soft-light;
+    filter: blur(30px);
 }
 
 body.dark-theme .ray-tracing-light {
-    /* Subtle light effect for dark mode with smooth falloff */
-    width: 400px;
-    height: 400px;
+    /* Smaller, subtler light effect for dark mode */
+    width: 300px;
+    height: 300px;
     background: radial-gradient(
         circle at center,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(255, 255, 255, 0.12) 10%,
-        rgba(255, 255, 255, 0.09) 20%,
-        rgba(255, 255, 255, 0.07) 30%,
-        rgba(255, 255, 255, 0.05) 40%,
-        rgba(255, 255, 255, 0.03) 50%,
-        rgba(255, 255, 255, 0.015) 60%,
-        rgba(255, 255, 255, 0.008) 70%,
-        transparent 85%
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.3) 20%,
+        rgba(255, 255, 255, 0.15) 35%,
+        rgba(255, 255, 255, 0.08) 50%,
+        transparent 70%
     );
-    mix-blend-mode: screen;
-    filter: blur(50px);
-    opacity: 0.7;
+    mix-blend-mode: soft-light;
 }
 
 /* Ensure content is above the light effect */
