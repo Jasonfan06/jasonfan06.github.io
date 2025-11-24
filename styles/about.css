@@ -36,8 +36,6 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     position: relative;
     overflow: hidden;
-    --mouse-x: 50%;
-    --mouse-y: 50%;
 }
 
 body.dark-theme .about-content .abstract {
@@ -96,11 +94,11 @@ body.dark-theme .about-content .abstract {
 }
 
 /* ===================================
-   Ray Tracing Light Effect for Abstract
+   Card Hover Effect for Abstract
    =================================== */
 
-/* Ensure content is above the light effect */
-.about-content .abstract > *:not(.ray-tracing-light) {
+/* Ensure content is above the hover effect */
+.about-content .abstract > *:not(.card-hover-effect) {
     position: relative;
     z-index: 2;
 }

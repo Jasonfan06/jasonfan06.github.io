@@ -7,7 +7,7 @@ import { loadComponents } from './components.js';
 import { primeDarkMode, initDarkMode } from './darkMode.js';
 import { initAnimations } from './animations.js';
 import { initSmoothScroll } from './smoothScroll.js';
-import { initRayTracing } from './rayTracing.js';
+import { initCardHover } from './cardHover.js';
 import './themeButton.js';
 
 /**
@@ -30,8 +30,8 @@ async function init() {
         // Initialize smooth scrolling
         initSmoothScroll();
         
-        // Initialize ray tracing effect
-        initRayTracing();
+        // Initialize card hover effect
+        initCardHover();
         
         console.log('✓ Site initialized successfully');
     } catch (error) {
