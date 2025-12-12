@@ -3,8 +3,8 @@
    =================================== */
 
 export function initCardHover() {
-    // Get all project cards and abstract boxes
-    const cards = document.querySelectorAll('.project-card, .abstract');
+    // Get all cards that should have the hover effect
+    const cards = document.querySelectorAll('.project-card');
     
     console.log(`✓ Initializing card hover for ${cards.length} cards`);
     

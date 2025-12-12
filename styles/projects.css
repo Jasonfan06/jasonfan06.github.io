@@ -91,6 +91,17 @@ body.dark-theme .project-card:hover {
     background: #000;
 }
 
+.project-with-media .project-image {
+    width: 100%;
+    display: block;
+    border-radius: 16px;
+}
+
+.project-with-media .project-image--small {
+    max-width: 320px;
+    margin: 0 auto;
+}
+
 .project-with-media .project-media-caption {
     margin-top: 0.5rem;
     font-size: 0.9rem;
@@ -107,6 +118,10 @@ body.dark-theme .project-card:hover {
     .project-with-media .project-media {
         width: 100%;
         max-width: none;
+    }
+
+    .project-with-media .project-image--small {
+        max-width: 100%;
     }
 }
 

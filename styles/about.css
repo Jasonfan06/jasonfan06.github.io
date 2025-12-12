@@ -23,51 +23,28 @@
     font-style: italic;
 }
 
-/* Abstract box for research interests - matching project card style */
-.about-content .abstract {
-    padding: 1.75rem;
+/* About section card spacing (cards reuse shared `.project-card` styles) */
+.about-content .project-card {
     margin: 2rem 0;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 24px;
-    transition: var(--transition-smooth);
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    position: relative;
-    overflow: hidden;
 }
 
-body.dark-theme .about-content .abstract {
-    border-color: rgba(255, 255, 255, 0.15);
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-
-.about-content .abstract h3 {
+/* Research Interests card: tweak spacing + list indent */
+.about-content .project-card h3 {
     margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
+    margin-bottom: 1.25rem; /* extra space below "Research Interests" */
 }
 
-.about-content .abstract ul {
+.about-content .project-card ul {
     margin: 0;
-    padding-left: 1.5rem;
-    list-style-type: disc;
+    padding-left: 1.75rem; /* indent bullets */
     list-style-position: outside;
-    text-align: left;
 }
 
-.about-content .abstract li {
+.about-content .project-card li {
     margin-bottom: 0.5rem;
-    line-height: 1.6;
-    text-align: left;
 }
 
-.about-content .abstract li:last-child {
+.about-content .project-card li:last-child {
     margin-bottom: 0;
 }
 
@@ -76,31 +53,10 @@ body.dark-theme .about-content .abstract {
     .about-content p {
         text-align: left;
     }
-    
-    .about-content .abstract {
-        padding: 1.5rem;
-    }
 }
 
 @media (max-width: 480px) {
-    .about-content .abstract {
-        padding: 1.25rem;
+    .about-content .project-card {
         margin: 1.5rem 0;
     }
-    
-    .about-content .abstract h3 {
-        font-size: 1.1rem;
-    }
 }
-
-/* ===================================
-   Card Hover Effect for Abstract
-   =================================== */
-
-/* Ensure content is above the hover effect */
-.about-content .abstract > *:not(.card-hover-effect) {
-    position: relative;
-    z-index: 2;
-}
-
-

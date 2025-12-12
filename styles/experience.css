@@ -5,6 +5,10 @@
 .experience-timeline {
     position: relative;
     margin-top: 2rem;
+    /* Keep the dot and the line perfectly aligned */
+    --timeline-line-width: 2px;
+    --timeline-dot-size: 10px;
+    --timeline-dot-border: 2px;
 }
 
 /* Timeline line */
@@ -14,7 +18,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 2px;
+    width: var(--timeline-line-width);
     background: linear-gradient(
         to bottom,
         currentColor 0%,
@@ -39,13 +43,18 @@
 .experience-item::before {
     content: '';
     position: absolute;
-    left: -4px;
+    /* Center the dot (including its border) on the timeline line */
+    left: calc(
+        (var(--timeline-line-width) / 2) -
+        (var(--timeline-dot-size) / 2) -
+        var(--timeline-dot-border)
+    );
     top: 0.5rem;
-    width: 10px;
-    height: 10px;
+    width: var(--timeline-dot-size);
+    height: var(--timeline-dot-size);
     border-radius: 50%;
     background: currentColor;
-    border: 2px solid var(--bg-color, #fff);
+    border: var(--timeline-dot-border) solid var(--bg-color, #fff);
     transition: var(--transition-smooth);
 }
 
@@ -131,7 +140,11 @@ body.dark-theme .experience-item:hover::before {
     }
     
     .experience-item::before {
-        left: -4px;
+        left: calc(
+            (var(--timeline-line-width) / 2) -
+            (var(--timeline-dot-size) / 2) -
+            var(--timeline-dot-border)
+        );
     }
     
     .experience-header {
