@@ -4,7 +4,7 @@
 
 /* Smooth scroll offset for fixed nav */
 html {
-    scroll-padding-top: 80px;
+    scroll-padding-top: var(--nav-offset, 60px);
 }
 
 /* Intersection Observer Animations */
@@ -226,5 +226,4 @@ body.dark-theme .spinner {
     border-color: rgba(255, 255, 255, 0.1);
     border-top-color: currentColor;
 }
-
 

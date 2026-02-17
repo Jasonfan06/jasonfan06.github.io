@@ -2,6 +2,10 @@
    Navigation Styles
    =================================== */
 
+:root {
+    --nav-offset: 60px;
+}
+
 .nav-container {
     position: fixed;
     top: 0;
@@ -33,8 +37,8 @@ body.dark-theme .nav-container {
     max-width: 1500px;
     margin: 0 auto;
     padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
 }
 
@@ -44,6 +48,7 @@ body.dark-theme .nav-container {
     text-decoration: none;
     transition: var(--transition-smooth);
     font-family: monospace;
+    justify-self: start;
 }
 
 .nav-logo:hover {
@@ -55,6 +60,8 @@ body.dark-theme .nav-container {
     list-style: none;
     gap: 2rem;
     margin: 0;
+    padding: 0;
+    justify-self: center;
 }
 
 .nav-link {
@@ -85,6 +92,7 @@ theme-button {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    justify-self: end;
 }
 
 /* Responsive Navigation */
@@ -126,19 +134,25 @@ theme-button {
 
 /* Add padding to body to account for fixed nav */
 body {
-    padding-top: 60px;
+    padding-top: var(--nav-offset);
 }
 
 @media (max-width: 768px) {
+    :root {
+        --nav-offset: 55px;
+    }
+
     body {
-        padding-top: 55px;
+        padding-top: var(--nav-offset);
     }
 }
 
 @media (max-width: 480px) {
+    :root {
+        --nav-offset: 50px;
+    }
+
     body {
-        padding-top: 50px;
+        padding-top: var(--nav-offset);
     }
 }
-
-

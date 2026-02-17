@@ -44,6 +44,7 @@ lerna-debug.log*
 
 # Local development
 node_modules/
+venv/
 dist/
 *.local
 
@@ -51,5 +52,4 @@ dist/
 .env
 .env.local
 .env.*.local
-
 

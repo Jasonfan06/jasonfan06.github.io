@@ -14,10 +14,8 @@
     /* G3 continuity - smooth iPhone-like corners */
     border-radius: 24px;
     transition: var(--transition-smooth);
-    /* Glassmorphism effect - increased transparency */
+    /* Keep current card color without glass blur */
     background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     /* Card hover setup */
     position: relative;
@@ -26,10 +24,8 @@
 
 body.dark-theme .project-card {
     border-color: rgba(255, 255, 255, 0.15);
-    /* Glassmorphism for dark mode - increased transparency */
+    /* Keep current dark card color without glass blur */
     background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -292,5 +288,4 @@ body.dark-theme .card-hover-effect {
     position: relative;
     z-index: 2;
 }
-
 

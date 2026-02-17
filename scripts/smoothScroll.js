@@ -3,6 +3,18 @@
  * Handles smooth scrolling for anchor links
  */
 
+function getNavOffset() {
+    const nav = document.querySelector('.nav-container');
+    if (nav) {
+        return nav.getBoundingClientRect().height;
+    }
+
+    const cssOffset = getComputedStyle(document.documentElement)
+        .getPropertyValue('--nav-offset');
+    const parsedOffset = parseFloat(cssOffset);
+    return Number.isFinite(parsedOffset) ? parsedOffset : 60;
+}
+
 /**
  * Initialize smooth scrolling for navigation links
  */
@@ -29,7 +41,7 @@ export function initSmoothScroll() {
                     e.preventDefault();
                     
                     // Calculate offset for fixed navigation
-                    const navHeight = 80;
+                    const navHeight = getNavOffset();
                     const targetPosition = targetElement.getBoundingClientRect().top + 
                                          window.pageYOffset - navHeight;
                     
@@ -47,33 +59,3 @@ export function initSmoothScroll() {
         });
     }, 200);
 }
-
-/**
- * Add easing to scroll events
- * @param {number} duration - Duration in milliseconds
- */
-export function smoothScrollTo(target, duration = 800) {
-    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
-    const startPosition = window.pageYOffset;
-    const distance = targetPosition - startPosition;
-    let startTime = null;
-    
-    function animation(currentTime) {
-        if (startTime === null) startTime = currentTime;
-        const timeElapsed = currentTime - startTime;
-        const run = ease(timeElapsed, startPosition, distance, duration);
-        window.scrollTo(0, run);
-        if (timeElapsed < duration) requestAnimationFrame(animation);
-    }
-    
-    function ease(t, b, c, d) {
-        t /= d / 2;
-        if (t < 1) return c / 2 * t * t + b;
-        t--;
-        return -c / 2 * (t * (t - 2) - 1) + b;
-    }
-    
-    requestAnimationFrame(animation);
-}
-
-
