@@ -1,16 +1,5 @@
-/**
- * Component Loader Module
- * Dynamically loads HTML components into the page
- */
-
-const components = [
-    { id: 'navigation', file: 'components/navigation.html' },
-    { id: 'header-section', file: 'components/header.html' },
-    { id: 'about-section', file: 'components/about.html' },
-    { id: 'projects-section', file: 'components/projects.html' },
-    { id: 'experience-section', file: 'components/experience.html' },
-    { id: 'footer-section', file: 'components/footer.html' }
-];
+import { COMPONENTS } from './components/manifest.js';
+import { one } from './utils/dom.js';
 
 /**
  * Load a single component
@@ -25,7 +14,7 @@ async function loadComponent(elementId, filePath) {
             throw new Error(`Failed to load ${filePath}: ${response.statusText}`);
         }
         const html = await response.text();
-        const element = document.getElementById(elementId);
+        const element = one(`#${elementId}`);
         if (element) {
             element.innerHTML = html;
         } else {
@@ -41,11 +30,9 @@ async function loadComponent(elementId, filePath) {
  * @returns {Promise<void>}
  */
 export async function loadComponents() {
-    const loadPromises = components.map(({ id, file }) => 
+    const loadPromises = COMPONENTS.map(({ id, file }) =>
         loadComponent(id, file)
     );
-    
+
     await Promise.all(loadPromises);
 }
-
-

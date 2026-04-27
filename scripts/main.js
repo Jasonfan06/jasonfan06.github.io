@@ -8,6 +8,7 @@ import { primeDarkMode, initDarkMode } from './darkMode.js';
 import { initAnimations } from './animations.js';
 import { initSmoothScroll } from './smoothScroll.js';
 import { initCardHover } from './cardHover.js';
+import { onReady } from './utils/dom.js';
 import './themeButton.js';
 
 /**
@@ -39,11 +40,5 @@ async function init() {
     }
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-
+onReady(init);
 

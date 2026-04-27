@@ -3,6 +3,8 @@
  * Handles scroll-based animations and intersection observers
  */
 
+import { all, one } from './utils/dom.js';
+
 /**
  * Create an intersection observer for scroll animations
  * @returns {IntersectionObserver}
@@ -32,21 +34,21 @@ function observeScrollElements() {
     const observer = createScrollObserver();
     
     // Observe all sections
-    const sections = document.querySelectorAll('.section-container');
+    const sections = all('.section-container');
     sections.forEach(section => {
         section.classList.add('animate-on-scroll');
         observer.observe(section);
     });
     
     // Observe project cards
-    const projectCards = document.querySelectorAll('.project-card');
+    const projectCards = all('.project-card');
     projectCards.forEach((card, index) => {
         card.style.transitionDelay = `${index * 0.1}s`;
         observer.observe(card);
     });
     
     // Observe experience items
-    const experienceItems = document.querySelectorAll('.experience-item');
+    const experienceItems = all('.experience-item');
     experienceItems.forEach((item, index) => {
         item.style.transitionDelay = `${index * 0.1}s`;
         observer.observe(item);
@@ -57,11 +59,10 @@ function observeScrollElements() {
  * Add parallax effect to scroll indicator
  */
 function initScrollIndicator() {
-    const scrollIndicator = document.querySelector('.scroll-indicator');
+    const scrollIndicator = one('.scroll-indicator');
     if (!scrollIndicator) return;
     
     // Hide scroll indicator after scrolling
-    let lastScroll = 0;
     window.addEventListener('scroll', () => {
         const currentScroll = window.pageYOffset;
         
@@ -72,8 +73,6 @@ function initScrollIndicator() {
             scrollIndicator.style.opacity = '0.4';
             scrollIndicator.style.pointerEvents = 'auto';
         }
-        
-        lastScroll = currentScroll;
     });
     
     // Click to scroll down
@@ -89,8 +88,8 @@ function initScrollIndicator() {
  * Add active state to navigation links based on scroll position
  */
 function initActiveNavigation() {
-    const sections = document.querySelectorAll('section[id], article[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = all('section[id], article[id]');
+    const navLinks = all('.nav-link');
     
     if (sections.length === 0 || navLinks.length === 0) return;
     
@@ -111,7 +110,7 @@ function initActiveNavigation() {
                 });
                 
                 // Add active class to current link
-                const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                const activeLink = one(`.nav-link[href="#${id}"]`);
                 if (activeLink) {
                     activeLink.classList.add('active');
                 }
@@ -126,31 +125,24 @@ function initActiveNavigation() {
  * Add hover effect to project tags
  */
 function initTagInteractions() {
-    setTimeout(() => {
-        const tags = document.querySelectorAll('.tag');
-        tags.forEach(tag => {
-            tag.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px) scale(1.05)';
-            });
-            
-            tag.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
+    const tags = all('.tag');
+    tags.forEach(tag => {
+        tag.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.05)';
         });
-    }, 500);
+
+        tag.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
 }
 
 /**
  * Initialize all animations
  */
 export function initAnimations() {
-    // Wait for components to load
-    setTimeout(() => {
-        observeScrollElements();
-        initScrollIndicator();
-        initActiveNavigation();
-        initTagInteractions();
-    }, 200);
+    observeScrollElements();
+    initScrollIndicator();
+    initActiveNavigation();
+    initTagInteractions();
 }
-
-
