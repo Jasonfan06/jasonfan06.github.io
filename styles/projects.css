@@ -79,6 +79,10 @@ body.dark-theme .project-card:hover {
     margin: 0;
 }
 
+.project-with-media .project-media--linked {
+    position: relative;
+}
+
 .project-with-media .project-video {
     width: 100%;
     display: block;
@@ -91,6 +95,27 @@ body.dark-theme .project-card:hover {
     width: 100%;
     display: block;
     border-radius: 16px;
+}
+
+.project-with-media .project-preview {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    display: block;
+    border: 0;
+    border-radius: 16px;
+    background: #0f1014;
+}
+
+.project-with-media .project-preview-link {
+    position: absolute;
+    inset: 0 0 1.9rem 0;
+    border-radius: 16px;
+    z-index: 3;
+}
+
+.project-with-media .project-preview-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
 }
 
 .project-with-media .project-image--small {
@@ -288,4 +313,3 @@ body.dark-theme .card-hover-effect {
     position: relative;
     z-index: 2;
 }
-
