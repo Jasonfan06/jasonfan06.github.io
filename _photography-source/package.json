@@ -9,7 +9,9 @@
     "dev": "vite --host 127.0.0.1",
     "prebuild": "npm run generate:gallery",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "studio": "node scripts/studio-server.mjs --open",
+    "test:studio": "node --test scripts/studio-server.test.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.5.0",

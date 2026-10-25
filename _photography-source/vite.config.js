@@ -32,6 +32,7 @@ function galleryDataPlugin() {
         filter: (source) => !path.basename(source).startsWith('.')
       });
       await fs.copyFile(path.join(projectRoot, 'public', 'favicon.svg'), path.join(output, 'favicon.svg'));
+      await fs.copyFile(path.join(projectRoot, 'public', 'gallery.json'), path.join(output, 'gallery.json'));
     },
     async configureServer(server) {
       await generateGalleryData();

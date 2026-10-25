@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Aperture as ApertureIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Aperture from './Aperture.jsx';
-import { collections } from './data/galleryData.generated.js';
+import { collections as defaultCollections } from './data/galleryData.generated.js';
 
 const base = import.meta.env.BASE_URL;
 const asset = (path = '') => `${base}${path.replace(/^\//, '')}`;
 const srcSet = (photo) => photo.variants?.map((variant) => `${asset(variant.src)} ${variant.width}w`).join(', ');
-const collectionFromHash = () => collections.find((item) => `#${item.id}` === window.location.hash) ?? null;
 
 function Photo({ photo, cover = false, eager = false, full = false, ...props }) {
   return <img src={asset(full ? photo.fullSrc ?? photo.src : photo.src)}
@@ -17,7 +16,8 @@ function Photo({ photo, cover = false, eager = false, full = false, ...props }) 
     alt={cover ? '' : photo.alt ?? photo.title} {...props} />;
 }
 
-export default function App() {
+export default function App({ collections = defaultCollections }) {
+  const collectionFromHash = () => collections.find((item) => `#${item.id}` === window.location.hash) ?? null;
   const [collection, setCollection] = useState(collectionFromHash);
   const [photoIndex, setPhotoIndex] = useState(null);
   const heading = useRef(null);

@@ -4,6 +4,18 @@ A white, image-led photography portfolio built with React and Vite. It opens wit
 
 Published at **https://jasonfan06.github.io/photography/**. The existing personal website at the domain root is preserved.
 
+## Upload photographs with Canoe Studio
+
+Double-click **Open Canoe Studio.command** in this folder. It opens a private page at `http://127.0.0.1:4317/#studio` on this Mac. Keep its Terminal window open while using the studio. You can also start it with `npm run studio`.
+
+1. Give the new set a name.
+2. Drop in photographs and select one as the cover. Optional image descriptions help screen-reader visitors.
+3. Click **Publish set**.
+
+The studio creates responsive WebP copies and publishes the complete set to the existing GitHub Pages repository using this Mac's Git sign-in. GitHub Pages then deploys it; the public link can take several minutes to update. The studio is bound to this Mac and does not expose an upload endpoint on the public portfolio. Original files are never uploaded or modified. The supported source formats are JPEG, PNG, WebP, and AVIF.
+
+`public/gallery.json` is the authoritative set list. It includes both the existing sets and studio uploads. Builds copy it as-is, and the public portfolio fetches it before opening a set. The local studio's working checkout and pending uploads stay under ignored `.canoe-studio/`. Keep that folder when retrying an interrupted publication.
+
 ## Run locally
 
 ```sh
