@@ -484,6 +484,241 @@
           ]
         }
       ]
+    },
+    {
+      "id": "flowers-30ad9957",
+      "title": "Flowers",
+      "folder": "Flowers",
+      "cover": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+      "coverPhoto": {
+        "id": "flowers-30ad9957-2",
+        "title": "DSC04763",
+        "alt": "Flowers, photograph 2",
+        "filename": "DSC04763.jpg",
+        "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+        "fullSrc": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
+        "srcSet": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp 600w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp 1200w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp 2000w",
+        "width": 6488,
+        "height": 4325,
+        "variants": [
+          {
+            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp",
+            "width": 600,
+            "height": 400
+          },
+          {
+            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+            "width": 1200,
+            "height": 800
+          },
+          {
+            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
+            "width": 2000,
+            "height": 1333
+          }
+        ]
+      },
+      "count": 7,
+      "photos": [
+        {
+          "id": "flowers-30ad9957-1",
+          "title": "DSC04758",
+          "alt": "Flowers, photograph 1",
+          "filename": "DSC04758.jpg",
+          "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/600.webp 600w, optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp 1200w, optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp 2000w",
+          "width": 7008,
+          "height": 4672,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/600.webp",
+              "width": 600,
+              "height": 400
+            },
+            {
+              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp",
+              "width": 1200,
+              "height": 800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp",
+              "width": 2000,
+              "height": 1333
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-2",
+          "title": "DSC04763",
+          "alt": "Flowers, photograph 2",
+          "filename": "DSC04763.jpg",
+          "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp 600w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp 1200w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp 2000w",
+          "width": 6488,
+          "height": 4325,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp",
+              "width": 600,
+              "height": 400
+            },
+            {
+              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+              "width": 1200,
+              "height": 800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
+              "width": 2000,
+              "height": 1333
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-3",
+          "title": "DSC04760",
+          "alt": "Flowers, photograph 3",
+          "filename": "DSC04760.jpg",
+          "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/600.webp 600w, optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp 1200w, optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp 2000w",
+          "width": 7008,
+          "height": 4672,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/600.webp",
+              "width": 600,
+              "height": 400
+            },
+            {
+              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp",
+              "width": 1200,
+              "height": 800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp",
+              "width": 2000,
+              "height": 1333
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-4",
+          "title": "DSC04759",
+          "alt": "Flowers, photograph 4",
+          "filename": "DSC04759.jpg",
+          "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/600.webp 600w, optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp 1200w, optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp 2000w",
+          "width": 3876,
+          "height": 5814,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/600.webp",
+              "width": 600,
+              "height": 900
+            },
+            {
+              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp",
+              "width": 1200,
+              "height": 1800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp",
+              "width": 2000,
+              "height": 3000
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-5",
+          "title": "DSC04783",
+          "alt": "Flowers, photograph 5",
+          "filename": "DSC04783.jpg",
+          "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/600.webp 600w, optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp 1200w, optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp 2000w",
+          "width": 4461,
+          "height": 6691,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/600.webp",
+              "width": 600,
+              "height": 900
+            },
+            {
+              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp",
+              "width": 1200,
+              "height": 1800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp",
+              "width": 2000,
+              "height": 3000
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-6",
+          "title": "DSC04778",
+          "alt": "Flowers, photograph 6",
+          "filename": "DSC04778.jpg",
+          "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/600.webp 600w, optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp 1200w, optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp 2000w",
+          "width": 7008,
+          "height": 4672,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/600.webp",
+              "width": 600,
+              "height": 400
+            },
+            {
+              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp",
+              "width": 1200,
+              "height": 800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp",
+              "width": 2000,
+              "height": 1333
+            }
+          ]
+        },
+        {
+          "id": "flowers-30ad9957-7",
+          "title": "DSC04786",
+          "alt": "Flowers, photograph 7",
+          "filename": "DSC04786.jpg",
+          "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp",
+          "fullSrc": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp",
+          "srcSet": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/600.webp 600w, optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp 1200w, optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp 2000w",
+          "width": 4672,
+          "height": 7008,
+          "variants": [
+            {
+              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/600.webp",
+              "width": 600,
+              "height": 900
+            },
+            {
+              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp",
+              "width": 1200,
+              "height": 1800
+            },
+            {
+              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp",
+              "width": 2000,
+              "height": 3000
+            }
+          ]
+        }
+      ],
+      "uploadRequestId": "b4012969-d5c0-4bfd-8e56-3b806f09973c",
+      "uploadFingerprint": "e1faa8884926c5e96259a522649807e96c725dbde24dfd0856616b57b2c6bbcf"
     }
   ]
 }
