@@ -71,7 +71,7 @@ export default function App() {
     <main id="main-content" className="page-width" tabIndex={-1}>
       {collection ? <section className="collection-page" key={collection.id} aria-labelledby="collection-title">
         <a href={base} onClick={home} className="back-link" aria-label="Back to all sets"><ArrowLeft size={22} strokeWidth={1.25} /></a>
-        <h1 className="sr-only" ref={heading} tabIndex={-1} id="collection-title">{collection.title}</h1>
+        <h1 className="collection-title" ref={heading} tabIndex={-1} id="collection-title">{collection.title}</h1>
         <div className={`photo-gallery ${collection.count <= 2 ? 'photo-gallery--pair' : ''}`}>
           {collection.photos.map((photo, index) => <button className="gallery-photo" key={photo.id}
             type="button" aria-label={`View ${collection.title}, photograph ${index + 1} of ${collection.count}`}

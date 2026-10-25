@@ -38,4 +38,4 @@ The self-contained `dist/` folder uses relative asset URLs, making it compatible
 
 Production build verified. Browser checks cover desktop and 390px layouts, set navigation, responsive image loading, original gallery proportions, lightbox arrow keys and Escape. Reduced-motion preferences bypass the opening animation.
 
-The visible layout contains only the Canoe wordmark, photo covers, hover titles, icon controls, and a copyright footer with “All rights reserved”. Navigation labels, headings, set/photo counts, credits, and Back to top text are omitted. Accessible labels remain available to screen readers.
+The visible layout contains the Canoe wordmark, photo covers, hover titles, each opened set's name above its gallery, icon controls, and a copyright footer with “All rights reserved”. Navigation labels, homepage headings, set/photo counts, credits, and Back to top text are omitted. Accessible labels remain available to screen readers.
