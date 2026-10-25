@@ -1,6 +1,6 @@
 # Canoe — Photography
 
-A white, image-led photography portfolio with an aperture reveal, photo set covers, rising hover titles, centered set names, and an uncropped gallery. Portraits fit within a comfortable viewport height; images retain their original proportions and full resolution.
+A white, image-led photography portfolio with an aperture reveal, photo set covers, rising hover titles, centered set names, and an uncropped masonry gallery. Photos flow at their natural proportions with consistent gaps and no reserved row space. Portraits fit within a comfortable viewport height; images retain their original proportions and full resolution.
 
 Published at **https://jasonfan06.github.io/photography/**. The personal website at the domain root is preserved.
 
