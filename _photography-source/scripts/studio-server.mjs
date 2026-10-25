@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import http from 'node:http';
 import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
+import { Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import path from 'node:path';
 import { randomBytes, randomUUID, createHash, timingSafeEqual } from 'node:crypto';
 import { execFile } from 'node:child_process';
@@ -11,9 +14,9 @@ const runFile = promisify(execFile);
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REMOTE = 'https://github.com/Jasonfan06/jasonfan06.github.io.git';
 const PUBLIC_URL = 'https://jasonfan06.github.io/photography/';
-const MAX_BODY = 64 * 1024 * 1024;
-const MAX_VARIANT = 3 * 1024 * 1024;
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
+const MAX_BODY = 2 * 1024 * 1024;
+const MAX_ORIGINAL = 50 * 1024 * 1024;
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.avif': 'image/avif' };
 
 class ApiError extends Error {
   constructor(status, message) { super(message); this.status = status; }
@@ -71,37 +74,79 @@ export function webpDimensions(buffer) {
   return dimensions;
 }
 
-function validateUpload(input) {
+function validUploadId(value) { return typeof value === 'string' && /^[A-Za-z0-9_-]{16,100}$/.test(value); }
+
+/** Recognize supported originals without decoding, rewriting, or stripping bytes. */
+export function originalImageInfo(header, byteSize) {
+  if (header.length >= 24 && header.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) && header.toString('ascii', 12, 16) === 'IHDR') {
+    return { type: 'image/png', extension: 'png', width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+  }
+  if (header.length >= 12 && header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff) {
+    let dimensions = {};
+    let offset = 2;
+    while (offset + 4 < header.length) {
+      if (header[offset] !== 0xff) break;
+      while (header[offset] === 0xff) offset++;
+      const marker = header[offset++];
+      if (marker === 0xda || marker === 0xd9) break;
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > header.length) break;
+      const length = header.readUInt16BE(offset);
+      if (length < 2) break;
+      if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker) && offset + 7 <= header.length) {
+        dimensions = { height: header.readUInt16BE(offset + 3), width: header.readUInt16BE(offset + 5) }; break;
+      }
+      offset += length;
+    }
+    if (!dimensions.width || !dimensions.height) throw new ApiError(400, 'This JPEG photograph has an invalid image header.');
+    return { type: 'image/jpeg', extension: 'jpg', ...dimensions };
+  }
+  if (header.length >= 30 && header.toString('ascii', 0, 4) === 'RIFF' && header.toString('ascii', 8, 12) === 'WEBP' && header.readUInt32LE(4) + 8 === byteSize) {
+    let dimensions = {};
+    let offset = 12;
+    while (offset + 8 <= header.length) {
+      const chunk = header.toString('ascii', offset, offset + 4);
+      const start = offset + 8;
+      const length = header.readUInt32LE(offset + 4);
+      if (chunk === 'VP8X' && start + 10 <= header.length) { dimensions = { width: header.readUIntLE(start + 4, 3) + 1, height: header.readUIntLE(start + 7, 3) + 1 }; break; }
+      if (chunk === 'VP8 ' && start + 10 <= header.length && header.toString('hex', start + 3, start + 6) === '9d012a') { dimensions = { width: header.readUInt16LE(start + 6) & 0x3fff, height: header.readUInt16LE(start + 8) & 0x3fff }; break; }
+      if (chunk === 'VP8L' && start + 5 <= header.length && header[start] === 0x2f) { const bits = header.readUInt32LE(start + 1); dimensions = { width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 }; break; }
+      offset = start + length + (length % 2);
+    }
+    if (!dimensions.width || !dimensions.height) throw new ApiError(400, 'This WebP photograph has an invalid image header.');
+    return { type: 'image/webp', extension: 'webp', ...dimensions };
+  }
+  if (header.length >= 16 && header.toString('ascii', 4, 8) === 'ftyp') {
+    const size = Math.min(header.readUInt32BE(0), header.length);
+    const brands = [header.toString('ascii', 8, 12)];
+    for (let offset = 16; offset + 4 <= size; offset += 4) brands.push(header.toString('ascii', offset, offset + 4));
+    if (brands.includes('avif') || brands.includes('avis')) return { type: 'image/avif', extension: 'avif' };
+  }
+  throw new ApiError(400, 'Choose an original JPEG, PNG, WebP, or AVIF photograph.');
+}
+
+async function validateUpload(input, resolvePhoto) {
   const title = cleanText(input?.title, 120, 'Set name');
   if (!title) throw new ApiError(400, 'Enter a name for the set.');
   if (!Array.isArray(input.photos) || input.photos.length < 1 || input.photos.length > 30) throw new ApiError(400, 'Choose between 1 and 30 photographs.');
   if (!Number.isInteger(input.coverIndex) || input.coverIndex < 0 || input.coverIndex >= input.photos.length) throw new ApiError(400, 'Choose a cover photograph.');
-  const requestId = input.requestId;
-  if (requestId !== undefined && (typeof requestId !== 'string' || !/^[A-Za-z0-9_-]{16,100}$/.test(requestId))) throw new ApiError(400, 'The upload identifier is invalid. Refresh the studio and try again.');
+  if (!validUploadId(input.requestId)) throw new ApiError(400, 'The draft identifier is invalid. Refresh the studio and try again.');
   const fingerprint = createHash('sha256').update(JSON.stringify([title, input.coverIndex]));
-  const photos = input.photos.map((photo, index) => {
+  const photos = [];
+  const seen = new Set();
+  for (let index = 0; index < input.photos.length; index++) {
+    const photo = input.photos[index];
     if (!photo || !Number.isInteger(photo.width) || !Number.isInteger(photo.height) || photo.width < 1 || photo.height < 1 || photo.width > 50000 || photo.height > 50000 || photo.width * photo.height > 200_000_000) throw new ApiError(400, `Photograph ${index + 1} has invalid dimensions.`);
+    if (!validUploadId(photo.uploadId) || seen.has(photo.uploadId)) throw new ApiError(400, 'Each photograph needs its own completed upload.');
+    seen.add(photo.uploadId);
+    const original = await resolvePhoto(input.requestId, photo.uploadId);
+    if (original.width && original.height && !((original.width === photo.width && original.height === photo.height) || (original.width === photo.height && original.height === photo.width))) throw new ApiError(400, `Photograph ${index + 1} does not match its original dimensions.`);
     const filename = cleanText(photo.filename, 250, 'Photo filename', `Photograph ${index + 1}`);
-    const alt = cleanText(photo.alt, 600, 'Photo description', `${title}, photograph ${index + 1}`);
-    const expectedWidths = [...new Set([600, 1200, 2000].map((width) => Math.min(width, photo.width)))];
-    if (!Array.isArray(photo.variants) || photo.variants.length !== expectedWidths.length) throw new ApiError(400, `Photograph ${index + 1} needs its optimized image sizes. Please choose it again.`);
-    fingerprint.update(JSON.stringify([filename, alt, photo.width, photo.height]));
-    const seen = new Set();
-    const variants = photo.variants.map((variant) => {
-      if (!variant || !Number.isInteger(variant.width) || !Number.isInteger(variant.height) || !expectedWidths.includes(variant.width) || seen.has(variant.width) || Math.abs(variant.height - Math.round(photo.height * variant.width / photo.width)) > 1) throw new ApiError(400, `Photograph ${index + 1} has an invalid optimized size.`);
-      seen.add(variant.width);
-      if (typeof variant.base64 !== 'string' || variant.base64.length === 0 || variant.base64.length > Math.ceil(MAX_VARIANT / 3) * 4 || variant.base64.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(variant.base64)) throw new ApiError(400, `Photograph ${index + 1} is invalid or too large. Please choose it again.`);
-      const bytes = Buffer.from(variant.base64, 'base64');
-      if (bytes.length > MAX_VARIANT || bytes.toString('base64') !== variant.base64) throw new ApiError(400, `Photograph ${index + 1} is invalid or too large.`);
-      const actual = webpDimensions(bytes);
-      if (actual.width !== variant.width || actual.height !== variant.height) throw new ApiError(400, `Photograph ${index + 1} does not match its image dimensions.`);
-      fingerprint.update(bytes);
-      return { width: variant.width, height: variant.height, bytes };
-    }).sort((a, b) => a.width - b.width);
-    return { filename, alt: alt || `${title}, photograph ${index + 1}`, width: photo.width, height: photo.height, variants };
-  });
-  const digest = fingerprint.digest('hex');
-  return { title, coverIndex: input.coverIndex, photos, requestId: requestId || digest, fingerprint: digest };
+    const alt = cleanText(photo.alt, 600, 'Photo description', `${title}, photograph ${index + 1}`) || `${title}, photograph ${index + 1}`;
+    fingerprint.update(JSON.stringify([filename, alt, photo.width, photo.height, original.sha256]));
+    photos.push({ ...original, filename, alt, width: photo.width, height: photo.height, uploadId: photo.uploadId });
+  }
+  return { title, coverIndex: input.coverIndex, photos, requestId: input.requestId, fingerprint: fingerprint.digest('hex') };
 }
 
 function readBody(request) {
@@ -132,7 +177,7 @@ function json(response, status, value) {
   response.end(body);
 }
 
-function safeImagePath(value) { return typeof value === 'string' && /^optimized\/(?:[A-Za-z0-9_-]+\/){1,3}[1-9][0-9]{0,4}\.webp$/.test(value); }
+function safeImagePath(value) { return typeof value === 'string' && (/^optimized\/(?:[A-Za-z0-9_-]+\/){1,3}[1-9][0-9]{0,4}\.webp$/.test(value) || /^originals\/[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+\.(?:jpg|jpeg|png|webp|avif)$/.test(value)); }
 
 function within(directory, file) { const relative = path.relative(directory, file); return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative)); }
 
@@ -158,6 +203,8 @@ export function createStudioServer(options = {}) {
   const repository = path.join(state, 'repository');
   const pendingFile = path.join(state, 'pending.json');
   const pendingFiles = path.join(state, 'pending-images');
+  const uploadsDirectory = path.join(state, 'uploads');
+  const receiving = new Set();
   const testRemote = options.testMode === true && typeof options.remote === 'string' && path.isAbsolute(options.remote) ? options.remote : null;
   const remote = testRemote || REMOTE;
   const publicUrl = testRemote ? (options.publicUrl || PUBLIC_URL) : PUBLIC_URL;
@@ -229,19 +276,73 @@ export function createStudioServer(options = {}) {
 
   async function syncLocal(transaction, gallery) {
     for (const item of transaction.files) {
-      if (!safeImagePath(item.src) || (item.staged && !/^[a-f0-9-]+-[0-9]+\.webp$/.test(item.staged))) throw new ApiError(409, 'The pending set contains an invalid image path. No files were changed.');
+      if (!safeImagePath(item.src) || (item.staged && !/^[a-f0-9-]+\.(?:jpg|jpeg|png|webp|avif)$/.test(item.staged))) throw new ApiError(409, 'The pending set contains an invalid image path. No files were changed.');
       const destination = path.join(root, 'public', item.src);
       await fs.mkdir(path.dirname(destination), { recursive: true });
       const staged = path.join(pendingFiles, item.staged);
       if (item.staged && await exists(staged)) await fs.copyFile(staged, destination);
       else if (!await exists(destination)) {
-        const { stdout } = await git(['show', `origin/main:photography/${item.src}`], { encoding: 'buffer', maxBuffer: MAX_VARIANT + 1024 });
+        const { stdout } = await git(['show', `origin/main:photography/${item.src}`], { encoding: 'buffer', maxBuffer: MAX_ORIGINAL + 1024 });
         await fs.writeFile(destination, stdout);
       }
     }
     await atomicJson(path.join(root, 'public', 'gallery.json'), gallery);
     await fs.rm(pendingFile, { force: true });
     await fs.rm(pendingFiles, { recursive: true, force: true });
+  }
+
+  async function receiveOriginal(request, url) {
+    const requestId = url.searchParams.get('requestId');
+    const uploadId = url.searchParams.get('photoId');
+    if (!validUploadId(requestId) || !validUploadId(uploadId)) throw new ApiError(400, 'This photograph has an invalid upload identifier.');
+    if (Number(request.headers['content-length']) > MAX_ORIGINAL) throw new ApiError(413, 'Each original photograph must be 50 MB or smaller.');
+    const declared = String(request.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+    if (!['image/jpeg','image/jpg','image/png','image/webp','image/avif','application/octet-stream'].includes(declared)) throw new ApiError(400, 'Choose an original JPEG, PNG, WebP, or AVIF photograph.');
+    const key = `${requestId}/${uploadId}`;
+    if (receiving.has(key)) throw new ApiError(409, 'This photograph is already uploading. Please wait.');
+    receiving.add(key);
+    const directory = path.join(uploadsDirectory, requestId);
+    const temporary = path.join(directory, `.upload-${randomUUID()}`);
+    try {
+      await fs.mkdir(directory, { recursive: true, mode: 0o700 });
+      const records = (await fs.readdir(directory)).filter((name) => name.endsWith('.json'));
+      if (records.length >= 30 && !records.includes(`${uploadId}.json`)) throw new ApiError(400, 'A set can contain up to 30 photographs.');
+      let byteSize = 0;
+      let captured = 0;
+      const headers = [];
+      const digest = createHash('sha256');
+      const counter = new Transform({ transform(chunk, encoding, done) {
+        byteSize += chunk.length;
+        if (byteSize > MAX_ORIGINAL) { done(new ApiError(413, 'Each original photograph must be 50 MB or smaller.')); return; }
+        digest.update(chunk);
+        if (captured < 1024 * 1024) { const part = chunk.subarray(0, 1024 * 1024 - captured); headers.push(part); captured += part.length; }
+        done(null, chunk);
+      } });
+      await pipeline(request, counter, createWriteStream(temporary, { flags: 'wx', mode: 0o600 }));
+      const info = originalImageInfo(Buffer.concat(headers), byteSize);
+      if (declared !== 'application/octet-stream' && declared !== info.type && !(declared === 'image/jpg' && info.type === 'image/jpeg')) throw new ApiError(400, 'This photograph does not match its file type.');
+      const sha256 = digest.digest('hex');
+      const recordFile = path.join(directory, `${uploadId}.json`);
+      if (await exists(recordFile)) {
+        const previous = JSON.parse(await fs.readFile(recordFile, 'utf8'));
+        if (previous.sha256 !== sha256 || previous.byteSize !== byteSize) throw new ApiError(409, 'This upload identifier was already used by another photograph. Choose the photo again.');
+        return { uploadId, byteSize, sha256, type: info.type };
+      }
+      await fs.rename(temporary, path.join(directory, `${uploadId}.original`));
+      await atomicJson(recordFile, { ...info, uploadId, byteSize, sha256 });
+      return { uploadId, byteSize, sha256, type: info.type };
+    } finally { receiving.delete(key); await fs.rm(temporary, { force: true }); }
+  }
+
+  async function resolveOriginal(requestId, uploadId) {
+    const directory = path.join(uploadsDirectory, requestId);
+    try {
+      const metadata = JSON.parse(await fs.readFile(path.join(directory, `${uploadId}.json`), 'utf8'));
+      const file = path.join(directory, `${uploadId}.original`);
+      const stat = await fs.stat(file);
+      if (metadata.uploadId !== uploadId || stat.size !== metadata.byteSize || !/^[a-f0-9]{64}$/.test(metadata.sha256)) throw new ApiError(400, 'An original photograph is incomplete. Upload it again.');
+      return { ...metadata, file };
+    } catch (error) { if (error.code === 'ENOENT') throw new ApiError(400, 'A photograph has not finished uploading. Upload it again.'); throw error; }
   }
 
   async function stageTransaction(upload) {
@@ -253,16 +354,11 @@ export function createStudioServer(options = {}) {
     for (let index = 0; index < upload.photos.length; index++) {
       const input = upload.photos[index];
       const photoId = randomUUID();
-      const variants = [];
-      for (const variant of input.variants) {
-        const src = `optimized/${id}/${photoId}/${variant.width}.webp`;
-        const staged = `${photoId}-${variant.width}.webp`;
-        await fs.writeFile(path.join(pendingFiles, staged), variant.bytes, { mode: 0o600 });
-        files.push({ src, staged });
-        variants.push({ src, width: variant.width, height: variant.height });
-      }
-      const selected = variants.find((variant) => variant.width >= 1200) || variants.at(-1);
-      photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, src: selected.src, fullSrc: variants.at(-1).src, srcSet: variants.map((variant) => `${variant.src} ${variant.width}w`).join(', '), width: input.width, height: input.height, variants });
+      const src = `originals/${id}/${photoId}.${input.extension}`;
+      const staged = `${photoId}.${input.extension}`;
+      await fs.copyFile(input.file, path.join(pendingFiles, staged));
+      files.push({ src, staged });
+      photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src, fullSrc: src, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256 });
     }
     const coverPhoto = photos[upload.coverIndex];
     const collection = { id, title: upload.title, folder: upload.title, cover: coverPhoto.src, coverPhoto, count: photos.length, photos, uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint };
@@ -324,9 +420,10 @@ export function createStudioServer(options = {}) {
   }
 
   async function publish(input) {
-    const upload = validateUpload(input);
-    await ensureRepository();
     const saved = await pending();
+    if (saved && saved.requestId !== input?.requestId) throw new ApiError(409, 'A previous set is waiting to publish. Resume it first.');
+    const upload = await validateUpload(input, resolveOriginal);
+    await ensureRepository();
     if (saved) {
       if (saved.requestId === upload.requestId && saved.fingerprint !== upload.fingerprint) throw new ApiError(409, 'This pending draft has changed. Retry with the original photos, or reopen the studio to recover it.');
       if (saved.requestId !== upload.requestId) throw new ApiError(409, 'A previous set is waiting to publish. Resume it first.');
@@ -336,7 +433,7 @@ export function createStudioServer(options = {}) {
     const existing = gallery.collections.find((collection) => collection.uploadRequestId === upload.requestId);
     if (existing) {
       if (existing.uploadFingerprint && existing.uploadFingerprint !== upload.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
-      const files = existing.photos.flatMap((photo) => photo.variants.map((variant) => ({ src: variant.src, staged: '' })));
+      const files = existing.photos.flatMap((photo) => photo.variants?.map((variant) => ({ src: variant.src, staged: '' })) || [{ src: photo.src, staged: '' }]);
       await syncLocal({ files }, gallery);
       return { collection: existing, url: `${publicUrl}#${encodeURIComponent(existing.id)}`, commit: (await git(['rev-parse', 'origin/main'])).stdout.trim() };
     }
@@ -366,6 +463,13 @@ export function createStudioServer(options = {}) {
       }
       if (url.pathname === '/api/status' && request.method === 'GET') {
         json(response, 200, { publishing, lastResult, pending: Boolean(await pending()) }); return;
+      }
+      if (url.pathname === '/api/photos' && request.method === 'POST') {
+        const supplied = request.headers['x-canoe-token'];
+        if (request.headers.origin !== origin || typeof supplied !== 'string' || !/^[a-f0-9]{64}$/.test(supplied) || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) throw new ApiError(403, 'The studio session has expired. Refresh this page and try again.');
+        if (publishing) throw new ApiError(409, 'A set is publishing. Please wait before uploading more photographs.');
+        json(response, 201, await receiveOriginal(request, url));
+        return;
       }
       if (['/api/sets', '/api/retry'].includes(url.pathname) && request.method === 'POST') {
         if (request.headers.origin !== origin || !/^application\/json(?:\s*;|$)/i.test(String(request.headers['content-type'] || ''))) throw new ApiError(403, 'Please publish from the studio page.');
@@ -400,7 +504,7 @@ export function createStudioServer(options = {}) {
       if (decoded === '/gallery.json') {
         if (await serveStatic(request, response, path.join(root, 'public'), 'gallery.json')) return;
       }
-      if (decoded.startsWith('/optimized/')) {
+      if (decoded.startsWith('/optimized/') || decoded.startsWith('/originals/') || decoded.startsWith('/photos/')) {
         if (await serveStatic(request, response, path.join(root, 'public'), decoded.slice(1))) return;
       }
       if (await serveStatic(request, response, path.join(root, 'dist'), decoded === '/' ? 'index.html' : decoded.slice(1))) return;

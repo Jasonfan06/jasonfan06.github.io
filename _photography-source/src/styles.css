@@ -20,3 +20,13 @@ main:focus{outline:none}
 .site-footer{justify-content:center;border:0;padding-top:0;color:#737373}
 .lightbox-top{justify-content:flex-end}
 @media(max-width:700px){.home-page{padding-top:16px;padding-bottom:44px}.collection-grid{row-gap:20px}.collection-page{padding-top:0}.site-footer{padding-top:0}.collection-page>.back-link{margin-bottom:16px}}
+
+/* Keep each photograph within a comfortable viewing height, without cropping. */
+.photo-gallery,.photo-gallery--pair{--gallery-gap:30px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));columns:auto;gap:var(--gallery-gap);align-items:start}
+.photo-gallery .gallery-photo{display:flex;justify-content:center;align-items:center;margin:0;min-width:0;background:transparent}
+.photo-gallery .gallery-photo img{width:auto;height:auto;max-width:100%;max-height:min(68vh,680px);max-height:min(68svh,680px);object-fit:contain}
+.photo-gallery .gallery-photo:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;max-width:calc((100% - var(--gallery-gap))/2)}
+@media(max-width:900px){.photo-gallery,.photo-gallery--pair{--gallery-gap:22px}}
+@media(max-width:700px){.photo-gallery,.photo-gallery--pair{grid-template-columns:minmax(0,1fr);--gallery-gap:24px}.photo-gallery .gallery-photo:last-child:nth-child(odd){grid-column:auto;max-width:100%}}
+
+.portfolio-photo{user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}

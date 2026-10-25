@@ -6,9 +6,11 @@ import { collections as defaultCollections } from './data/galleryData.generated.
 const base = import.meta.env.BASE_URL;
 const asset = (path = '') => `${base}${path.replace(/^\//, '')}`;
 const srcSet = (photo) => photo.variants?.map((variant) => `${asset(variant.src)} ${variant.width}w`).join(', ');
+const preventPhotoAction = (event) => event.preventDefault();
+const photoGuards = { onContextMenu: preventPhotoAction, onDragStart: preventPhotoAction, onCopy: preventPhotoAction, onCut: preventPhotoAction };
 
 function Photo({ photo, cover = false, eager = false, full = false, ...props }) {
-  return <img src={asset(full ? photo.fullSrc ?? photo.src : photo.src)}
+  return <img className="portfolio-photo" draggable={false} {...photoGuards} src={asset(full ? photo.fullSrc ?? photo.src : photo.src)}
     srcSet={full ? undefined : srcSet(photo)}
     sizes={full ? undefined : '(max-width: 700px) 100vw, 50vw'}
     width={photo.width} height={photo.height} loading={eager ? 'eager' : 'lazy'}
@@ -74,6 +76,7 @@ export default function App({ collections = defaultCollections }) {
         <h1 className="collection-title" ref={heading} tabIndex={-1} id="collection-title">{collection.title}</h1>
         <div className={`photo-gallery ${collection.count <= 2 ? 'photo-gallery--pair' : ''}`}>
           {collection.photos.map((photo, index) => <button className="gallery-photo" key={photo.id}
+            {...photoGuards}
             type="button" aria-label={`View ${collection.title}, photograph ${index + 1} of ${collection.count}`}
             onClick={() => setPhotoIndex(index)}>
             <Photo photo={photo} eager={index < 2} />
@@ -86,6 +89,7 @@ export default function App({ collections = defaultCollections }) {
         <h1 className="sr-only" id="page-title" ref={heading} tabIndex={-1}>Canoe photography portfolio</h1>
         <div className="collection-grid" aria-label="Photography sets">
           {collections.map((item, index) => <a className="collection-cover" id={`cover-${item.id}`} key={item.id}
+            {...photoGuards}
             href={`#${item.id}`} onClick={(event) => { event.preventDefault(); openCollection(item); }}
             aria-label={`Open ${item.title}, ${item.count} photographs`}>
             <span className="cover-image"><Photo photo={item.coverPhoto ?? item.photos[0]} cover eager={index < 2} />
@@ -130,7 +134,7 @@ function Lightbox({ collection, index, onClose, onChange }) {
   return <dialog ref={dialog} className="lightbox" aria-label={`${collection.title} photograph viewer`} onCancel={cancel}
     onKeyDown={(event) => { if (event.key === 'ArrowRight') { event.preventDefault(); move(1); } if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); } }}>
     <div className="lightbox-top"><button className="lightbox-close" onClick={onClose} aria-label="Close photograph"><X size={23} strokeWidth={1.2} /></button></div>
-    <div className="lightbox-stage" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    <div className="lightbox-stage" {...photoGuards} onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
       onTouchStart={(event) => { touch.current = event.touches[0].clientX; }}
       onTouchEnd={(event) => { if (touch.current === null) return; const delta = event.changedTouches[0].clientX - touch.current; if (Math.abs(delta) > 55) move(delta > 0 ? -1 : 1); touch.current = null; }}>
       <Photo key={photo.id} photo={photo} full eager />

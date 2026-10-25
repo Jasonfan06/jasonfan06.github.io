@@ -1,7 +1,7 @@
 import { collections as fallbackCollections } from './data/galleryData.generated.js';
 
 function safeImagePath(value) {
-  return typeof value === 'string' && value.startsWith('optimized/') && !value.includes('..') && !/[\\\u0000-\u001f]/.test(value);
+  return typeof value === 'string' && /^(optimized|photos|originals)\//.test(value) && !value.includes('..') && !/[\\\u0000-\u001f]/.test(value);
 }
 
 export function validateGallery(value) {

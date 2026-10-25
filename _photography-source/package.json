@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate:gallery": "node scripts/generate-gallery-data.mjs",
+    "generate:gallery": "node scripts/sync-gallery-data.mjs",
     "predev": "npm run generate:gallery",
     "dev": "vite --host 127.0.0.1",
     "prebuild": "npm run generate:gallery",

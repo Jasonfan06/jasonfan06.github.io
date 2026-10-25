@@ -4,8 +4,6 @@ import './studio.css';
 
 const MAX_FILES = 30;
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
-const MAX_OUTPUT_BYTES = 40 * 1024 * 1024;
-const IMAGE_WIDTHS = [600, 1200, 2000];
 const EXTENSIONS = /\.(jpe?g|png|webp|avif)$/i;
 const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 const makeRequestId = () => crypto.randomUUID();
@@ -34,57 +32,20 @@ async function openImage(file) {
   }
 }
 
-function webpBlob(canvas) {
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => {
-    if (!blob || blob.type !== 'image/webp') reject(new Error('This browser cannot create WebP images. Open the studio in a current version of Chrome or Safari.'));
-    else resolve(blob);
-  }, 'image/webp', 0.86));
-}
-
-function blobBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = () => reject(new Error('A photograph could not be read. Please try again.'));
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function preparePhoto(item, title, index, budget) {
-  const image = await openImage(item.file);
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  if (!context) { image.close?.(); throw new Error('Your browser could not prepare the photographs. Please reload the studio.'); }
+async function photoDimensions(file) {
+  const image = await openImage(file);
   try {
-    const width = image.width;
-    const height = image.height;
-    if (!width || !height) throw new Error(`“${item.file.name}” has no readable image dimensions.`);
-    const variants = [];
-    const sizes = [...new Set(IMAGE_WIDTHS.map((size) => Math.min(width, size)))];
-    for (const targetWidth of sizes) {
-      const targetHeight = Math.max(1, Math.round(height * targetWidth / width));
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      context.clearRect(0, 0, targetWidth, targetHeight);
-      context.drawImage(image.source || image, 0, 0, targetWidth, targetHeight);
-      const blob = await webpBlob(canvas);
-      if (blob.size > 3 * 1024 * 1024) throw new Error(`“${item.file.name}” is too large to prepare. Try exporting a smaller copy.`);
-      budget.bytes += blob.size;
-      if (budget.bytes > MAX_OUTPUT_BYTES) throw new Error('This set is too large after preparation. Remove a few photographs and publish them as a separate set.');
-      variants.push({ width: targetWidth, height: targetHeight, base64: await blobBase64(blob) });
-    }
-    return {
-      filename: item.file.name,
-      alt: item.alt.trim() || `${title}, photograph ${index + 1}`,
-      width,
-      height,
-      variants,
-    };
+    if (!image.width || !image.height) throw new Error(`“${file.name}” has no readable image dimensions.`);
+    return { width: image.width, height: image.height };
   } finally {
     image.close?.();
-    canvas.width = 1;
-    canvas.height = 1;
   }
+}
+
+function photoContentType(file) {
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(file.type)) return file.type;
+  const extension = file.name.split('.').at(-1)?.toLowerCase();
+  return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' }[extension] || 'application/octet-stream';
 }
 
 export default function Studio() {
@@ -222,23 +183,41 @@ export default function Studio() {
     submitLock.current = true;
     setError('');
     const name = title.trim();
-    const budget = { bytes: 0 };
+    const draftRequestId = requestId.current;
+    const totalBytes = photos.reduce((total, item) => total + item.file.size, 0);
+    let uploadedBytes = 0;
     let submitted = false;
     try {
-      const prepared = [];
+      const uploaded = [];
       for (let index = 0; index < photos.length; index += 1) {
-        setStage({ phase: 'preparing', current: index, total: photos.length, detail: photos[index].file.name });
-        prepared.push(await preparePhoto(photos[index], name, index, budget));
-        setStage({ phase: 'preparing', current: index + 1, total: photos.length, detail: photos[index].file.name });
+        const item = photos[index];
+        setStage({ phase: 'uploading', current: index, total: photos.length, bytes: uploadedBytes, totalBytes, detail: item.file.name });
+        const dimensions = await photoDimensions(item.file);
+        submitted = true;
+        let uploadResponse;
+        try {
+          uploadResponse = await fetch(`/api/photos?requestId=${encodeURIComponent(draftRequestId)}&photoId=${encodeURIComponent(item.id)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': photoContentType(item.file), 'X-Canoe-Token': session.token },
+            body: item.file,
+          });
+        } catch {
+          throw new Error(`“${item.file.name}” could not finish uploading. Your originals and draft are still here; please try publishing again.`);
+        }
+        const upload = await readJson(uploadResponse);
+        if (!upload.uploadId) throw new Error(`“${item.file.name}” could not be confirmed by the studio. Please try publishing again.`);
+        uploaded.push({ uploadId: upload.uploadId, filename: item.file.name, alt: item.alt.trim() || `${name}, photograph ${index + 1}`, ...dimensions });
+        uploadedBytes += item.file.size;
+        setStage({ phase: 'uploading', current: index + 1, total: photos.length, bytes: uploadedBytes, totalBytes, detail: item.file.name });
       }
-      setStage({ phase: 'publishing', total: photos.length, bytes: budget.bytes });
+      setStage({ phase: 'publishing', total: photos.length, bytes: uploadedBytes });
       let response;
       try {
         submitted = true;
         response = await fetch('/api/sets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Canoe-Token': session.token },
-          body: JSON.stringify({ title: name, photos: prepared, coverIndex: Math.max(0, photos.findIndex((photo) => photo.id === cover?.id)), requestId: requestId.current }),
+          body: JSON.stringify({ title: name, photos: uploaded, coverIndex: Math.max(0, photos.findIndex((photo) => photo.id === cover?.id)), requestId: draftRequestId }),
         });
       } catch {
         throw new Error('The connection ended before publishing could be confirmed. Check your portfolio before retrying; the studio will reuse this draft’s publishing request.');
@@ -291,9 +270,9 @@ export default function Studio() {
         </div>
         <aside className="studio-publish-panel" aria-label="Set preview and publishing">
           <p className="studio-eyebrow">Your set</p><div className={`studio-cover-preview${cover ? '' : ' is-empty'}`}>{cover ? <img src={cover.url} alt="Selected set cover" /> : <Aperture size={36} strokeWidth={0.8} />}</div><h2 className={title.trim() ? '' : 'is-placeholder'}>{title.trim() || 'Untitled set'}</h2><p className="studio-publish-count">{photos.length ? `${photos.length} ${photos.length === 1 ? 'photograph' : 'photographs'}` : 'No photographs yet'}</p>
-          <p className="studio-publish-note">Your photos will be prepared for the web. Originals on your Mac stay unchanged.</p>
-          <button className="studio-primary studio-publish-button" type="submit" disabled={!canPublish}>{busy ? <><LoaderCircle className="studio-spinner" size={16} /> {stage.phase === 'preparing' ? 'Preparing photographs' : 'Publishing set'}</> : <><Upload size={16} /> Publish set</>}</button>
-          <div className="studio-progress" role="status" aria-live="polite">{connection === 'loading' ? <p><LoaderCircle className="studio-spinner" size={12} /> Connecting to your studio…</p> : stage?.phase === 'preparing' ? <><progress value={stage.current} max={stage.total} aria-label="Preparing photographs" /><p>{stage.current} of {stage.total} prepared</p></> : stage?.phase === 'publishing' ? <><progress aria-label="Uploading and publishing" /><p>Uploading {mb(stage.bytes)} and sending your set to GitHub. Keep this window open.</p></> : stage?.phase === 'resuming' ? <><progress aria-label="Resuming publishing" /><p>Sending your saved set to GitHub. Keep this window open.</p></> : session?.pending ? <p>Resume the saved set above before publishing a new one.</p> : <p>Publishes to your existing portfolio.</p>}</div>
+          <p className="studio-publish-note">Original files are uploaded unchanged, at full resolution.</p>
+          <button className="studio-primary studio-publish-button" type="submit" disabled={!canPublish}>{busy ? <><LoaderCircle className="studio-spinner" size={16} /> {stage.phase === 'uploading' ? 'Uploading originals' : stage.phase === 'resuming' ? 'Resuming publishing' : 'Publishing set'}</> : <><Upload size={16} /> Publish set</>}</button>
+          <div className="studio-progress" role="status" aria-live="polite">{connection === 'loading' ? <p><LoaderCircle className="studio-spinner" size={12} /> Connecting to your studio…</p> : stage?.phase === 'uploading' ? <><progress value={stage.bytes} max={stage.totalBytes || 1} aria-label="Uploading original photographs" /><p>{stage.current} of {stage.total} uploaded · {mb(stage.bytes)} of {mb(stage.totalBytes)}</p></> : stage?.phase === 'publishing' ? <><progress aria-label="Publishing original photographs" /><p>Sending {mb(stage.bytes)} of original photographs to GitHub. Keep this window open.</p></> : stage?.phase === 'resuming' ? <><progress aria-label="Resuming publishing" /><p>Sending your saved set to GitHub. Keep this window open.</p></> : session?.pending ? <p>Resume the saved set above before publishing a new one.</p> : <p>Publishes to your existing portfolio.</p>}</div>
         </aside>
       </form>}
       {existing.length > 0 && <section className="studio-existing" aria-labelledby="studio-existing-title"><div className="studio-section-heading"><h2 id="studio-existing-title">Published sets</h2><span>{existing.length} sets</span></div><div className="studio-existing-grid">{existing.map((collection) => <a key={collection.id} href={`${publicUrl}#${collection.id}`} target="_blank" rel="noreferrer"><span>{collection.title}</span><ArrowUpRight size={15} strokeWidth={1.25} /></a>)}</div></section>}

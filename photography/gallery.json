@@ -5,34 +5,19 @@
       "id": "coziness",
       "title": "Coziness",
       "folder": "Coziness",
-      "cover": "optimized/coziness-dsc00661-a78d1d53a2/1200.webp",
+      "cover": "photos/Coziness/DSC00661.jpg",
       "coverPhoto": {
         "id": "coziness-2",
         "title": "DSC00661",
         "alt": "A sunlit tabby cat tilts its head toward the camera.",
         "filename": "DSC00661.jpg",
-        "src": "optimized/coziness-dsc00661-a78d1d53a2/1200.webp",
-        "fullSrc": "optimized/coziness-dsc00661-a78d1d53a2/2000.webp",
-        "srcSet": "optimized/coziness-dsc00661-a78d1d53a2/600.webp 600w, optimized/coziness-dsc00661-a78d1d53a2/1200.webp 1200w, optimized/coziness-dsc00661-a78d1d53a2/2000.webp 2000w",
+        "src": "photos/Coziness/DSC00661.jpg",
+        "fullSrc": "photos/Coziness/DSC00661.jpg",
         "width": 6883,
         "height": 4589,
-        "variants": [
-          {
-            "src": "optimized/coziness-dsc00661-a78d1d53a2/600.webp",
-            "width": 600,
-            "height": 400
-          },
-          {
-            "src": "optimized/coziness-dsc00661-a78d1d53a2/1200.webp",
-            "width": 1200,
-            "height": 800
-          },
-          {
-            "src": "optimized/coziness-dsc00661-a78d1d53a2/2000.webp",
-            "width": 2000,
-            "height": 1333
-          }
-        ]
+        "original": true,
+        "byteSize": 13878905,
+        "sha256": "059728883eae6f859707a247e4b28e195b6106cb22079a88edae764ec27973aa"
       },
       "count": 5,
       "photos": [
@@ -41,140 +26,65 @@
           "title": "DSC00654",
           "alt": "A tabby cat looks through a lattice of bamboo stems in warm sunlight.",
           "filename": "DSC00654.jpg",
-          "src": "optimized/coziness-dsc00654-84e80e357e/1200.webp",
-          "fullSrc": "optimized/coziness-dsc00654-84e80e357e/2000.webp",
-          "srcSet": "optimized/coziness-dsc00654-84e80e357e/600.webp 600w, optimized/coziness-dsc00654-84e80e357e/1200.webp 1200w, optimized/coziness-dsc00654-84e80e357e/2000.webp 2000w",
+          "src": "photos/Coziness/DSC00654.jpg",
+          "fullSrc": "photos/Coziness/DSC00654.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/coziness-dsc00654-84e80e357e/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/coziness-dsc00654-84e80e357e/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/coziness-dsc00654-84e80e357e/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 15460216,
+          "sha256": "d23bda86e3dccb861e2e75dd6466e9dde9b3ce4d5fa997066bfb30c3ab805799"
         },
         {
           "id": "coziness-2",
           "title": "DSC00661",
           "alt": "A sunlit tabby cat tilts its head toward the camera.",
           "filename": "DSC00661.jpg",
-          "src": "optimized/coziness-dsc00661-a78d1d53a2/1200.webp",
-          "fullSrc": "optimized/coziness-dsc00661-a78d1d53a2/2000.webp",
-          "srcSet": "optimized/coziness-dsc00661-a78d1d53a2/600.webp 600w, optimized/coziness-dsc00661-a78d1d53a2/1200.webp 1200w, optimized/coziness-dsc00661-a78d1d53a2/2000.webp 2000w",
+          "src": "photos/Coziness/DSC00661.jpg",
+          "fullSrc": "photos/Coziness/DSC00661.jpg",
           "width": 6883,
           "height": 4589,
-          "variants": [
-            {
-              "src": "optimized/coziness-dsc00661-a78d1d53a2/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/coziness-dsc00661-a78d1d53a2/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/coziness-dsc00661-a78d1d53a2/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 13878905,
+          "sha256": "059728883eae6f859707a247e4b28e195b6106cb22079a88edae764ec27973aa"
         },
         {
           "id": "coziness-3",
           "title": "DSC00667",
           "alt": "A tabby cat looks upward, seen from behind through crossing bamboo stems.",
           "filename": "DSC00667.jpg",
-          "src": "optimized/coziness-dsc00667-ca6fa83efc/1200.webp",
-          "fullSrc": "optimized/coziness-dsc00667-ca6fa83efc/2000.webp",
-          "srcSet": "optimized/coziness-dsc00667-ca6fa83efc/600.webp 600w, optimized/coziness-dsc00667-ca6fa83efc/1200.webp 1200w, optimized/coziness-dsc00667-ca6fa83efc/2000.webp 2000w",
+          "src": "photos/Coziness/DSC00667.jpg",
+          "fullSrc": "photos/Coziness/DSC00667.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/coziness-dsc00667-ca6fa83efc/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/coziness-dsc00667-ca6fa83efc/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/coziness-dsc00667-ca6fa83efc/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 15855343,
+          "sha256": "35807bbb13aa1199cd65c706d4a20bfd43eb852ad352dd75c46644d28b488c13"
         },
         {
           "id": "coziness-4",
           "title": "DSC00668",
           "alt": "A tabby cat lifts its face toward the light behind a lattice of bamboo.",
           "filename": "DSC00668.jpg",
-          "src": "optimized/coziness-dsc00668-73cf89816b/1200.webp",
-          "fullSrc": "optimized/coziness-dsc00668-73cf89816b/2000.webp",
-          "srcSet": "optimized/coziness-dsc00668-73cf89816b/600.webp 600w, optimized/coziness-dsc00668-73cf89816b/1200.webp 1200w, optimized/coziness-dsc00668-73cf89816b/2000.webp 2000w",
+          "src": "photos/Coziness/DSC00668.jpg",
+          "fullSrc": "photos/Coziness/DSC00668.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/coziness-dsc00668-73cf89816b/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/coziness-dsc00668-73cf89816b/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/coziness-dsc00668-73cf89816b/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 13939379,
+          "sha256": "bad7cb1db1b31535791cf39f344d1de1176212f4f59983eac1a7e2e2441274db"
         },
         {
           "id": "coziness-5",
           "title": "DSC00670",
           "alt": "A tabby cat rests in sunlight with its eyes nearly closed.",
           "filename": "DSC00670.jpg",
-          "src": "optimized/coziness-dsc00670-6c31dbb5bc/1200.webp",
-          "fullSrc": "optimized/coziness-dsc00670-6c31dbb5bc/2000.webp",
-          "srcSet": "optimized/coziness-dsc00670-6c31dbb5bc/600.webp 600w, optimized/coziness-dsc00670-6c31dbb5bc/1200.webp 1200w, optimized/coziness-dsc00670-6c31dbb5bc/2000.webp 2000w",
+          "src": "photos/Coziness/DSC00670.jpg",
+          "fullSrc": "photos/Coziness/DSC00670.jpg",
           "width": 6649,
           "height": 4433,
-          "variants": [
-            {
-              "src": "optimized/coziness-dsc00670-6c31dbb5bc/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/coziness-dsc00670-6c31dbb5bc/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/coziness-dsc00670-6c31dbb5bc/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 12715449,
+          "sha256": "932244d3d57da750e4ad737dd727496e2adc5db4b4e4fc60da211e9c010a777c"
         }
       ]
     },
@@ -182,34 +92,19 @@
       "id": "half-covered-face",
       "title": "Half-covered Face",
       "folder": "Half-covered Face",
-      "cover": "optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp",
+      "cover": "photos/Half-covered%20Face/DSC00717.jpg",
       "coverPhoto": {
         "id": "half-covered-face-2",
         "title": "DSC00717",
         "alt": "Sunlight catches one eye of a tabby cat behind a diagonal dark railing.",
         "filename": "DSC00717.jpg",
-        "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp",
-        "fullSrc": "optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp",
-        "srcSet": "optimized/half-covered-face-dsc00717-3e5c5cbad1/600.webp 600w, optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp 1200w, optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp 2000w",
+        "src": "photos/Half-covered%20Face/DSC00717.jpg",
+        "fullSrc": "photos/Half-covered%20Face/DSC00717.jpg",
         "width": 6884,
         "height": 4589,
-        "variants": [
-          {
-            "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/600.webp",
-            "width": 600,
-            "height": 400
-          },
-          {
-            "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp",
-            "width": 1200,
-            "height": 800
-          },
-          {
-            "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp",
-            "width": 2000,
-            "height": 1333
-          }
-        ]
+        "original": true,
+        "byteSize": 13070480,
+        "sha256": "3790f063c080d4b73e7a9ec47e4620bf6530d005d9da8101e5f7fb2951da21c7"
       },
       "count": 2,
       "photos": [
@@ -218,56 +113,26 @@
           "title": "DSC00715",
           "alt": "A tabby cat peers from behind dark railings, pale posts, and small leaves.",
           "filename": "DSC00715.jpg",
-          "src": "optimized/half-covered-face-dsc00715-3c8cfaabef/1200.webp",
-          "fullSrc": "optimized/half-covered-face-dsc00715-3c8cfaabef/2000.webp",
-          "srcSet": "optimized/half-covered-face-dsc00715-3c8cfaabef/600.webp 600w, optimized/half-covered-face-dsc00715-3c8cfaabef/1200.webp 1200w, optimized/half-covered-face-dsc00715-3c8cfaabef/2000.webp 2000w",
+          "src": "photos/Half-covered%20Face/DSC00715.jpg",
+          "fullSrc": "photos/Half-covered%20Face/DSC00715.jpg",
           "width": 6884,
           "height": 4589,
-          "variants": [
-            {
-              "src": "optimized/half-covered-face-dsc00715-3c8cfaabef/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/half-covered-face-dsc00715-3c8cfaabef/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/half-covered-face-dsc00715-3c8cfaabef/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 13016503,
+          "sha256": "adda740d61f62d19bc1e197c2867214432ccf01021542729f826975ea607366a"
         },
         {
           "id": "half-covered-face-2",
           "title": "DSC00717",
           "alt": "Sunlight catches one eye of a tabby cat behind a diagonal dark railing.",
           "filename": "DSC00717.jpg",
-          "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp",
-          "fullSrc": "optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp",
-          "srcSet": "optimized/half-covered-face-dsc00717-3e5c5cbad1/600.webp 600w, optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp 1200w, optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp 2000w",
+          "src": "photos/Half-covered%20Face/DSC00717.jpg",
+          "fullSrc": "photos/Half-covered%20Face/DSC00717.jpg",
           "width": 6884,
           "height": 4589,
-          "variants": [
-            {
-              "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/half-covered-face-dsc00717-3e5c5cbad1/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 13070480,
+          "sha256": "3790f063c080d4b73e7a9ec47e4620bf6530d005d9da8101e5f7fb2951da21c7"
         }
       ]
     },
@@ -275,34 +140,19 @@
       "id": "overbearing",
       "title": "Overbearing",
       "folder": "Overbearing",
-      "cover": "optimized/overbearing-dsc00981-441aa04662/1200.webp",
+      "cover": "photos/Overbearing/DSC00981.jpg",
       "coverPhoto": {
         "id": "overbearing-1",
         "title": "DSC00981",
         "alt": "A white calico cat sits upright on leaf-strewn ground against a blurred background.",
         "filename": "DSC00981.jpg",
-        "src": "optimized/overbearing-dsc00981-441aa04662/1200.webp",
-        "fullSrc": "optimized/overbearing-dsc00981-441aa04662/2000.webp",
-        "srcSet": "optimized/overbearing-dsc00981-441aa04662/600.webp 600w, optimized/overbearing-dsc00981-441aa04662/1200.webp 1200w, optimized/overbearing-dsc00981-441aa04662/2000.webp 2000w",
+        "src": "photos/Overbearing/DSC00981.jpg",
+        "fullSrc": "photos/Overbearing/DSC00981.jpg",
         "width": 4672,
         "height": 7008,
-        "variants": [
-          {
-            "src": "optimized/overbearing-dsc00981-441aa04662/600.webp",
-            "width": 600,
-            "height": 900
-          },
-          {
-            "src": "optimized/overbearing-dsc00981-441aa04662/1200.webp",
-            "width": 1200,
-            "height": 1800
-          },
-          {
-            "src": "optimized/overbearing-dsc00981-441aa04662/2000.webp",
-            "width": 2000,
-            "height": 3000
-          }
-        ]
+        "original": true,
+        "byteSize": 18484548,
+        "sha256": "29b6a5d34f89ebec5856288724a032373c732105f5fd6d6dab021bc10b17e5f3"
       },
       "count": 2,
       "photos": [
@@ -311,56 +161,26 @@
           "title": "DSC00981",
           "alt": "A white calico cat sits upright on leaf-strewn ground against a blurred background.",
           "filename": "DSC00981.jpg",
-          "src": "optimized/overbearing-dsc00981-441aa04662/1200.webp",
-          "fullSrc": "optimized/overbearing-dsc00981-441aa04662/2000.webp",
-          "srcSet": "optimized/overbearing-dsc00981-441aa04662/600.webp 600w, optimized/overbearing-dsc00981-441aa04662/1200.webp 1200w, optimized/overbearing-dsc00981-441aa04662/2000.webp 2000w",
+          "src": "photos/Overbearing/DSC00981.jpg",
+          "fullSrc": "photos/Overbearing/DSC00981.jpg",
           "width": 4672,
           "height": 7008,
-          "variants": [
-            {
-              "src": "optimized/overbearing-dsc00981-441aa04662/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/overbearing-dsc00981-441aa04662/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/overbearing-dsc00981-441aa04662/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 18484548,
+          "sha256": "29b6a5d34f89ebec5856288724a032373c732105f5fd6d6dab021bc10b17e5f3"
         },
         {
           "id": "overbearing-2",
           "title": "DSC00998",
           "alt": "A close portrait of a calico cat with green eyes and black and orange markings.",
           "filename": "DSC00998.jpg",
-          "src": "optimized/overbearing-dsc00998-67b13508dc/1200.webp",
-          "fullSrc": "optimized/overbearing-dsc00998-67b13508dc/2000.webp",
-          "srcSet": "optimized/overbearing-dsc00998-67b13508dc/600.webp 600w, optimized/overbearing-dsc00998-67b13508dc/1200.webp 1200w, optimized/overbearing-dsc00998-67b13508dc/2000.webp 2000w",
+          "src": "photos/Overbearing/DSC00998.jpg",
+          "fullSrc": "photos/Overbearing/DSC00998.jpg",
           "width": 3977,
           "height": 5965,
-          "variants": [
-            {
-              "src": "optimized/overbearing-dsc00998-67b13508dc/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/overbearing-dsc00998-67b13508dc/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/overbearing-dsc00998-67b13508dc/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 12906586,
+          "sha256": "0321746076aa417f6d2f236bef61a2c834a886b1a77181536afe647a36dcbd76"
         }
       ]
     },
@@ -368,34 +188,19 @@
       "id": "smoke",
       "title": "Smoke",
       "folder": "Smoke",
-      "cover": "optimized/smoke-dsc00796-a1cdc432dd/1200.webp",
+      "cover": "photos/Smoke/DSC00796.jpg",
       "coverPhoto": {
         "id": "smoke-2",
         "title": "DSC00796",
         "alt": "A person in a cap and patterned apron stands beside rising cooking smoke.",
         "filename": "DSC00796.jpg",
-        "src": "optimized/smoke-dsc00796-a1cdc432dd/1200.webp",
-        "fullSrc": "optimized/smoke-dsc00796-a1cdc432dd/2000.webp",
-        "srcSet": "optimized/smoke-dsc00796-a1cdc432dd/600.webp 600w, optimized/smoke-dsc00796-a1cdc432dd/1200.webp 1200w, optimized/smoke-dsc00796-a1cdc432dd/2000.webp 2000w",
+        "src": "photos/Smoke/DSC00796.jpg",
+        "fullSrc": "photos/Smoke/DSC00796.jpg",
         "width": 5744,
         "height": 4212,
-        "variants": [
-          {
-            "src": "optimized/smoke-dsc00796-a1cdc432dd/600.webp",
-            "width": 600,
-            "height": 440
-          },
-          {
-            "src": "optimized/smoke-dsc00796-a1cdc432dd/1200.webp",
-            "width": 1200,
-            "height": 880
-          },
-          {
-            "src": "optimized/smoke-dsc00796-a1cdc432dd/2000.webp",
-            "width": 2000,
-            "height": 1467
-          }
-        ]
+        "original": true,
+        "byteSize": 6945401,
+        "sha256": "7f6566b9decb3aaf89367576f85025626731d7187aa0c8d3051c89560ae542da"
       },
       "count": 3,
       "photos": [
@@ -404,84 +209,39 @@
           "title": "DSC00772",
           "alt": "A person in a dark jacket bends over a large cooking vessel surrounded by smoke.",
           "filename": "DSC00772.jpg",
-          "src": "optimized/smoke-dsc00772-90e143c1e9/1200.webp",
-          "fullSrc": "optimized/smoke-dsc00772-90e143c1e9/2000.webp",
-          "srcSet": "optimized/smoke-dsc00772-90e143c1e9/600.webp 600w, optimized/smoke-dsc00772-90e143c1e9/1200.webp 1200w, optimized/smoke-dsc00772-90e143c1e9/2000.webp 2000w",
+          "src": "photos/Smoke/DSC00772.jpg",
+          "fullSrc": "photos/Smoke/DSC00772.jpg",
           "width": 6202,
           "height": 4578,
-          "variants": [
-            {
-              "src": "optimized/smoke-dsc00772-90e143c1e9/600.webp",
-              "width": 600,
-              "height": 443
-            },
-            {
-              "src": "optimized/smoke-dsc00772-90e143c1e9/1200.webp",
-              "width": 1200,
-              "height": 886
-            },
-            {
-              "src": "optimized/smoke-dsc00772-90e143c1e9/2000.webp",
-              "width": 2000,
-              "height": 1476
-            }
-          ]
+          "original": true,
+          "byteSize": 9339975,
+          "sha256": "abe064042a40834ccb02ab5a6b29e7d88698af579615e0bb6e65e86eb3a8cc68"
         },
         {
           "id": "smoke-2",
           "title": "DSC00796",
           "alt": "A person in a cap and patterned apron stands beside rising cooking smoke.",
           "filename": "DSC00796.jpg",
-          "src": "optimized/smoke-dsc00796-a1cdc432dd/1200.webp",
-          "fullSrc": "optimized/smoke-dsc00796-a1cdc432dd/2000.webp",
-          "srcSet": "optimized/smoke-dsc00796-a1cdc432dd/600.webp 600w, optimized/smoke-dsc00796-a1cdc432dd/1200.webp 1200w, optimized/smoke-dsc00796-a1cdc432dd/2000.webp 2000w",
+          "src": "photos/Smoke/DSC00796.jpg",
+          "fullSrc": "photos/Smoke/DSC00796.jpg",
           "width": 5744,
           "height": 4212,
-          "variants": [
-            {
-              "src": "optimized/smoke-dsc00796-a1cdc432dd/600.webp",
-              "width": 600,
-              "height": 440
-            },
-            {
-              "src": "optimized/smoke-dsc00796-a1cdc432dd/1200.webp",
-              "width": 1200,
-              "height": 880
-            },
-            {
-              "src": "optimized/smoke-dsc00796-a1cdc432dd/2000.webp",
-              "width": 2000,
-              "height": 1467
-            }
-          ]
+          "original": true,
+          "byteSize": 6945401,
+          "sha256": "7f6566b9decb3aaf89367576f85025626731d7187aa0c8d3051c89560ae542da"
         },
         {
           "id": "smoke-3",
           "title": "DSC02268",
           "alt": "A person works at a street food stall at night beneath a bright plume of smoke.",
           "filename": "DSC02268.jpg",
-          "src": "optimized/smoke-dsc02268-8bd2e8e454/1200.webp",
-          "fullSrc": "optimized/smoke-dsc02268-8bd2e8e454/2000.webp",
-          "srcSet": "optimized/smoke-dsc02268-8bd2e8e454/600.webp 600w, optimized/smoke-dsc02268-8bd2e8e454/1200.webp 1200w, optimized/smoke-dsc02268-8bd2e8e454/2000.webp 2000w",
+          "src": "photos/Smoke/DSC02268.jpg",
+          "fullSrc": "photos/Smoke/DSC02268.jpg",
           "width": 4672,
           "height": 7008,
-          "variants": [
-            {
-              "src": "optimized/smoke-dsc02268-8bd2e8e454/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/smoke-dsc02268-8bd2e8e454/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/smoke-dsc02268-8bd2e8e454/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 12650765,
+          "sha256": "8a0f86d801bbd1736a19274a69acde14b70b0eb4077f16082dbf6bfbf308b397"
         }
       ]
     },
@@ -489,34 +249,19 @@
       "id": "flowers-30ad9957",
       "title": "Flowers",
       "folder": "Flowers",
-      "cover": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
+      "cover": "photos/Flowers/DSC04763.jpg",
       "coverPhoto": {
         "id": "flowers-30ad9957-2",
         "title": "DSC04763",
         "alt": "Flowers, photograph 2",
         "filename": "DSC04763.jpg",
-        "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
-        "fullSrc": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
-        "srcSet": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp 600w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp 1200w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp 2000w",
+        "src": "photos/Flowers/DSC04763.jpg",
+        "fullSrc": "photos/Flowers/DSC04763.jpg",
         "width": 6488,
         "height": 4325,
-        "variants": [
-          {
-            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp",
-            "width": 600,
-            "height": 400
-          },
-          {
-            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
-            "width": 1200,
-            "height": 800
-          },
-          {
-            "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
-            "width": 2000,
-            "height": 1333
-          }
-        ]
+        "original": true,
+        "byteSize": 8770718,
+        "sha256": "1b417e0e5f8b7eb237e484e0068ee3c6d9c85d8a6a403d047b6fecd7a989401d"
       },
       "count": 7,
       "photos": [
@@ -525,196 +270,91 @@
           "title": "DSC04758",
           "alt": "Flowers, photograph 1",
           "filename": "DSC04758.jpg",
-          "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/600.webp 600w, optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp 1200w, optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04758.jpg",
+          "fullSrc": "photos/Flowers/DSC04758.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/b23b774e-27ef-4a98-ba26-88e70ccc2468/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 15128566,
+          "sha256": "ba0b83715b0d75a3a6a4554c97e23045dc12869f5b2adad801f3e4371ef20f80"
         },
         {
           "id": "flowers-30ad9957-2",
           "title": "DSC04763",
           "alt": "Flowers, photograph 2",
           "filename": "DSC04763.jpg",
-          "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp 600w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp 1200w, optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04763.jpg",
+          "fullSrc": "photos/Flowers/DSC04763.jpg",
           "width": 6488,
           "height": 4325,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/f48be9ee-9ba9-43c4-990c-263eb869743d/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 8770718,
+          "sha256": "1b417e0e5f8b7eb237e484e0068ee3c6d9c85d8a6a403d047b6fecd7a989401d"
         },
         {
           "id": "flowers-30ad9957-3",
           "title": "DSC04760",
           "alt": "Flowers, photograph 3",
           "filename": "DSC04760.jpg",
-          "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/600.webp 600w, optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp 1200w, optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04760.jpg",
+          "fullSrc": "photos/Flowers/DSC04760.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/8fc6806a-771a-4b65-81fa-b62898fc3aa2/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 8699955,
+          "sha256": "206dabf27094720657aa37af747275707dd979c5ff95cfd37b111f6f33159a93"
         },
         {
           "id": "flowers-30ad9957-4",
           "title": "DSC04759",
           "alt": "Flowers, photograph 4",
           "filename": "DSC04759.jpg",
-          "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/600.webp 600w, optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp 1200w, optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04759.jpg",
+          "fullSrc": "photos/Flowers/DSC04759.jpg",
           "width": 3876,
           "height": 5814,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/57abab81-c8a9-42cd-a100-981c9090b2d4/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 6927005,
+          "sha256": "4524dc1e0c9f9836c9de3cfe9e34898d633316267b92e48430007bdc1d8fa13b"
         },
         {
           "id": "flowers-30ad9957-5",
           "title": "DSC04783",
           "alt": "Flowers, photograph 5",
           "filename": "DSC04783.jpg",
-          "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/600.webp 600w, optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp 1200w, optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04783.jpg",
+          "fullSrc": "photos/Flowers/DSC04783.jpg",
           "width": 4461,
           "height": 6691,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/5957bd9b-0189-4f68-bbe1-5ab1e524256f/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 11952636,
+          "sha256": "025e9dbba3072be7b4254e6a8216f54dcc3954e5c7c69af4345a7885d462d0a3"
         },
         {
           "id": "flowers-30ad9957-6",
           "title": "DSC04778",
           "alt": "Flowers, photograph 6",
           "filename": "DSC04778.jpg",
-          "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/600.webp 600w, optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp 1200w, optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04778.jpg",
+          "fullSrc": "photos/Flowers/DSC04778.jpg",
           "width": 7008,
           "height": 4672,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/600.webp",
-              "width": 600,
-              "height": 400
-            },
-            {
-              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/1200.webp",
-              "width": 1200,
-              "height": 800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/1d737240-3f29-4e8f-b91e-0e9e79c83356/2000.webp",
-              "width": 2000,
-              "height": 1333
-            }
-          ]
+          "original": true,
+          "byteSize": 14617131,
+          "sha256": "3cba79330920321ca7d072b1dd058823c0f25b7659eea64292b1f52e1447ba94"
         },
         {
           "id": "flowers-30ad9957-7",
           "title": "DSC04786",
           "alt": "Flowers, photograph 7",
           "filename": "DSC04786.jpg",
-          "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp",
-          "fullSrc": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp",
-          "srcSet": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/600.webp 600w, optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp 1200w, optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp 2000w",
+          "src": "photos/Flowers/DSC04786.jpg",
+          "fullSrc": "photos/Flowers/DSC04786.jpg",
           "width": 4672,
           "height": 7008,
-          "variants": [
-            {
-              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/600.webp",
-              "width": 600,
-              "height": 900
-            },
-            {
-              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/1200.webp",
-              "width": 1200,
-              "height": 1800
-            },
-            {
-              "src": "optimized/flowers-30ad9957/19237ade-79d0-4675-9ce3-c48e45dd2003/2000.webp",
-              "width": 2000,
-              "height": 3000
-            }
-          ]
+          "original": true,
+          "byteSize": 10153013,
+          "sha256": "57b96f82760d769e2a0424a826372cafcfd9df4f0def7d86dff03c8d4ec7dc88"
         }
       ],
       "uploadRequestId": "b4012969-d5c0-4bfd-8e56-3b806f09973c",

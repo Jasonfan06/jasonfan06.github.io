@@ -1,53 +1,41 @@
 # Canoe — Photography
 
-A white, image-led photography portfolio built with React and Vite. It opens with a nine-blade aperture animation, presents one cover per set, and reveals the set name in a translucent white bar on hover or keyboard focus. Small screens show the title bar persistently. Each set has an uncropped gallery and a full-screen viewer with keyboard navigation, swipe gestures, and native dialog focus handling.
+A white, image-led photography portfolio with an aperture reveal, photo set covers, rising hover titles, centered set names, and an uncropped gallery. Portraits fit within a comfortable viewport height; images retain their original proportions and full resolution.
 
-Published at **https://jasonfan06.github.io/photography/**. The existing personal website at the domain root is preserved.
+Published at **https://jasonfan06.github.io/photography/**. The personal website at the domain root is preserved.
 
-## Upload photographs with Canoe Studio
+## Upload with Canoe Studio
 
-Double-click **Open Canoe Studio.command** in this folder. It opens a private page at `http://127.0.0.1:4317/#studio` on this Mac. Keep its Terminal window open while using the studio. You can also start it with `npm run studio`.
+Double-click **Open Canoe Studio.command** in this folder. The private studio opens at `http://127.0.0.1:4317/#studio` on this Mac. You can also run `npm run studio`.
 
-1. Give the new set a name.
-2. Drop in photographs and select one as the cover. Optional image descriptions help screen-reader visitors.
+1. Name the set.
+2. Drop in photographs and choose a cover.
 3. Click **Publish set**.
 
-The studio creates responsive WebP copies and publishes the complete set to the existing GitHub Pages repository using this Mac's Git sign-in. GitHub Pages then deploys it; the public link can take several minutes to update. The studio is bound to this Mac and does not expose an upload endpoint on the public portfolio. Original files are never uploaded or modified. The supported source formats are JPEG, PNG, WebP, and AVIF.
+Original files are uploaded unchanged, at full resolution. The studio does not resize, re-encode, or compress them. It uploads files individually, then publishes the complete set in one commit. JPEG, PNG, WebP, and AVIF files up to 50 MiB each are supported, with up to 30 photos per set. The public page scales images only for display.
 
-`public/gallery.json` is the authoritative set list. It includes both the existing sets and studio uploads. Builds copy it as-is, and the public portfolio fetches it before opening a set. The local studio's working checkout and pending uploads stay under ignored `.canoe-studio/`. Keep that folder when retrying an interrupted publication.
+The studio uses this Mac's existing GitHub sign-in. A saved, interrupted publication can be resumed. GitHub Pages can take a few minutes to deploy a submitted set. Keep the studio's Terminal window open while using it; the public portfolio stays online when the studio closes.
 
-## Run locally
+The studio binds only to this Mac. It does not expose a public upload endpoint, store a GitHub token in the webpage, or modify source photographs. Its managed checkout and resumable uploads remain under ignored `.canoe-studio/`.
+
+## Run or build
 
 ```sh
 npm ci
 npm run dev
-```
-
-## Photos and covers
-
-Originals live in `public/photos/<set name>/`. Add a folder to create a set. JPG, JPEG, PNG, WebP and AVIF files are supported. The build generates 600, 1200 and 2000 pixel WebP variants without upscaling, preserves orientation, converts embedded color profiles to sRGB, and strips metadata. Gallery images retain their proportions. Covers use a consistent landscape frame.
-
-Install Pillow when processing new originals:
-
-```sh
-python3 -m pip install Pillow
-npm run generate:gallery
-```
-
-Set custom covers in `collectionCovers` in `scripts/generate-gallery-data.mjs`. Descriptive alternative text is configured in the same script. Generated metadata is in `src/data/galleryData.generated.js`.
-
-Your local original photographs are never edited. Only optimized WebP copies are included in the published build. The repository source uses the optimized images and saved metadata so it builds without the original files or Pillow. To add new photographs, install Pillow and add the originals locally.
-
-## Build and publish
-
-```sh
 npm run build
 ```
 
-The self-contained `dist/` folder uses relative asset URLs, making it compatible with GitHub Pages subdirectories. Publish its contents to `photography/` in `Jasonfan06/jasonfan06.github.io` on the `main` branch. GitHub Pages serves the existing repository branch. Keep `_photography-source/` updated with this project; its leading underscore excludes development files from Jekyll output. Do not replace the existing personal site's root files.
+`public/gallery.json` is the authoritative set list. Builds refresh the offline metadata fallback from that JSON and copy image files unchanged. No image processing runs during build. Existing originals live under `public/photos/`; future studio uploads live under `public/originals/`. Legacy optimized copies remain solely for backward compatibility with older cached pages.
+
+The build uses relative URLs. To publish source updates, copy `dist/` into `photography/` in the `main` branch of `Jasonfan06/jasonfan06.github.io`. Keep the project source under `_photography-source/` updated. Preserve the latest remote gallery JSON and image files when publishing code changes.
 
 ## Verification
 
-Production build verified. Browser checks cover desktop and 390px layouts, set navigation, responsive image loading, original gallery proportions, lightbox arrow keys and Escape. Reduced-motion preferences bypass the opening animation.
+```sh
+npm run test:studio
+```
 
-The visible layout contains the Canoe wordmark, photo covers, hover titles, each opened set's name above its gallery, icon controls, and a copyright footer with “All rights reserved”. Navigation labels, homepage headings, set/photo counts, credits, and Back to top text are omitted. Accessible labels remain available to screen readers.
+The studio's isolated tests cover original byte preservation, image signatures, local request protections, repository publishing, idempotent retries, failed-push recovery, and preservation of the personal homepage. Gallery browser checks cover portrait sizing, mixed proportions, and desktop/mobile layouts.
+
+The public photo elements suppress ordinary right-click menus, copy/cut, drag saving, selection, and supported touch callouts. These are interaction deterrents; public images can still be accessed through browser tools or captured in screenshots.
