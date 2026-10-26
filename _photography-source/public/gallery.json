@@ -359,6 +359,59 @@
       ],
       "uploadRequestId": "b4012969-d5c0-4bfd-8e56-3b806f09973c",
       "uploadFingerprint": "e1faa8884926c5e96259a522649807e96c725dbde24dfd0856616b57b2c6bbcf"
+    },
+    {
+      "id": "bird-and-shadow-379e49e3",
+      "title": "Bird and Shadow",
+      "folder": "Bird and Shadow",
+      "cover": "originals/bird-and-shadow-379e49e3/01dc39e6-cebe-4744-8436-e0665980fdb3.jpg",
+      "coverPhoto": {
+        "id": "bird-and-shadow-379e49e3-1",
+        "title": "DSC07960",
+        "alt": "Bird and Shadow, photograph 1",
+        "filename": "DSC07960.jpg",
+        "uploadId": "d510e76c-76ad-4202-9fac-ae55fe135710",
+        "src": "originals/bird-and-shadow-379e49e3/01dc39e6-cebe-4744-8436-e0665980fdb3.jpg",
+        "fullSrc": "originals/bird-and-shadow-379e49e3/01dc39e6-cebe-4744-8436-e0665980fdb3.jpg",
+        "width": 5365,
+        "height": 3577,
+        "original": true,
+        "byteSize": 4044298,
+        "sha256": "4740303e0fffe08cc07bf180998de047b56849db033c737eebc3ba98d7d83c8c"
+      },
+      "count": 2,
+      "photos": [
+        {
+          "id": "bird-and-shadow-379e49e3-1",
+          "title": "DSC07960",
+          "alt": "Bird and Shadow, photograph 1",
+          "filename": "DSC07960.jpg",
+          "uploadId": "d510e76c-76ad-4202-9fac-ae55fe135710",
+          "src": "originals/bird-and-shadow-379e49e3/01dc39e6-cebe-4744-8436-e0665980fdb3.jpg",
+          "fullSrc": "originals/bird-and-shadow-379e49e3/01dc39e6-cebe-4744-8436-e0665980fdb3.jpg",
+          "width": 5365,
+          "height": 3577,
+          "original": true,
+          "byteSize": 4044298,
+          "sha256": "4740303e0fffe08cc07bf180998de047b56849db033c737eebc3ba98d7d83c8c"
+        },
+        {
+          "id": "bird-and-shadow-379e49e3-2",
+          "title": "DSC07962",
+          "alt": "Bird and Shadow, photograph 2",
+          "filename": "DSC07962.jpg",
+          "uploadId": "60536ea7-9aef-46af-958e-ff0a4a3f207a",
+          "src": "originals/bird-and-shadow-379e49e3/300e6644-1b2d-4b33-9cb5-6a43f5a1ef63.jpg",
+          "fullSrc": "originals/bird-and-shadow-379e49e3/300e6644-1b2d-4b33-9cb5-6a43f5a1ef63.jpg",
+          "width": 3450,
+          "height": 5175,
+          "original": true,
+          "byteSize": 7876114,
+          "sha256": "cb2ae98d2aa1564e84dabb961e12b6b8835af7f04339970497c2ab8d460c9363"
+        }
+      ],
+      "uploadRequestId": "fcb9cf6e-440e-48e0-a5ce-f83b26f9d668",
+      "uploadFingerprint": "83e316cf79f09cc6e013355c00fb7f6bc594964c7b5ace79304fdf59a87f226b"
     }
   ]
 }
