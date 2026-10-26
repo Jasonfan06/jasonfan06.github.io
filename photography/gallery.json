@@ -412,6 +412,45 @@
       ],
       "uploadRequestId": "fcb9cf6e-440e-48e0-a5ce-f83b26f9d668",
       "uploadFingerprint": "83e316cf79f09cc6e013355c00fb7f6bc594964c7b5ace79304fdf59a87f226b"
+    },
+    {
+      "id": "nap-2a821867",
+      "title": "Nap",
+      "folder": "Nap",
+      "cover": "originals/nap-2a821867/f2719b09-168c-4b0c-b0bd-d52d30ee135d.jpg",
+      "coverPhoto": {
+        "id": "nap-2a821867-1",
+        "title": "DSC07008",
+        "alt": "Nap, photograph 1",
+        "filename": "DSC07008.jpg",
+        "uploadId": "3dff0db9-89ec-4479-b321-f9dbdd1a3727",
+        "src": "originals/nap-2a821867/f2719b09-168c-4b0c-b0bd-d52d30ee135d.jpg",
+        "fullSrc": "originals/nap-2a821867/f2719b09-168c-4b0c-b0bd-d52d30ee135d.jpg",
+        "width": 4672,
+        "height": 7008,
+        "original": true,
+        "byteSize": 25098357,
+        "sha256": "8187c58938148802cd9401ae04e341a237b45055a27708f5c9cb3b832d622498"
+      },
+      "count": 1,
+      "photos": [
+        {
+          "id": "nap-2a821867-1",
+          "title": "DSC07008",
+          "alt": "Nap, photograph 1",
+          "filename": "DSC07008.jpg",
+          "uploadId": "3dff0db9-89ec-4479-b321-f9dbdd1a3727",
+          "src": "originals/nap-2a821867/f2719b09-168c-4b0c-b0bd-d52d30ee135d.jpg",
+          "fullSrc": "originals/nap-2a821867/f2719b09-168c-4b0c-b0bd-d52d30ee135d.jpg",
+          "width": 4672,
+          "height": 7008,
+          "original": true,
+          "byteSize": 25098357,
+          "sha256": "8187c58938148802cd9401ae04e341a237b45055a27708f5c9cb3b832d622498"
+        }
+      ],
+      "uploadRequestId": "930faabd-b722-4a34-b611-c98603d2fe1e",
+      "uploadFingerprint": "f9043fe4af86b8b986e1f467fef288b90260fec6054c5097f21add3fd376f96d"
     }
   ]
 }
