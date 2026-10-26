@@ -370,11 +370,8 @@ export function createLoadingCoordinator(collections, options = {}) {
   function visibilityChanged() {
     interruptBackground();
     if (hidden()) {
-      if (foreground && !foreground.ready) {
-        foreground.controller.abort();
-        foreground.reject(abortError());
-        foreground = null;
-      }
+      // Keep the viewer's explicitly requested image alive. Its decode promise is
+      // still owned by the mounted viewer; only optional background work pauses.
       setStage('paused');
     } else kick();
   }

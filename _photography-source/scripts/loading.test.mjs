@@ -87,3 +87,60 @@ test('original warming drains stream chunks without allocating a full-file buffe
   assert.equal(released, 1);
   loader.destroy();
 });
+
+test('hiding the tab preserves a requested original and resumes background work on return', async () => {
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+  const events = new Map();
+  const images = [];
+  const idle = new Map();
+  let idleId = 0;
+  let transfers = 0;
+  const page = {
+    baseURI: 'https://example.test/', hidden: false,
+    addEventListener(type, callback) { events.set(type, callback); },
+    removeEventListener(type) { events.delete(type); },
+  };
+  class RequestedImage {
+    constructor() { this.naturalWidth = 600; this.naturalHeight = 400; }
+    set src(value) {
+      this.value = value;
+      if (value) images.push(this);
+    }
+    get src() { return this.value; }
+    decode() { return new Promise((resolve) => { this.finishDecode = resolve; }); }
+  }
+  const environment = {
+    document: page, innerWidth: 600, innerHeight: 800, devicePixelRatio: 1,
+    navigator: {}, Image: RequestedImage, setTimeout, clearTimeout,
+    requestIdleCallback(callback) { const id = ++idleId; idle.set(id, callback); return id; },
+    cancelIdleCallback(id) { idle.delete(id); },
+  };
+  const photograph = { id: 'requested', width: 600, height: 400, src: 'optimized/requested.webp', fullSrc: 'originals/requested.jpg', variants: [{ src: 'optimized/requested.webp', width: 600, height: 400 }] };
+  const loader = createLoadingCoordinator([{ id: 'set', photos: [photograph], coverPhoto: photograph }], {
+    environment,
+    fetch: async () => { transfers += 1; return { ok: true, arrayBuffer: async () => new ArrayBuffer(1) }; },
+  });
+  loader.animationFinished();
+  let rejected = false;
+  const original = loader.loadOriginal(photograph).catch((error) => { rejected = true; throw error; });
+  const requestedImage = images.at(-1);
+  assert.match(requestedImage.src, /originals\/requested\.jpg$/);
+  requestedImage.onload();
+  await tick();
+  page.hidden = true;
+  events.get('visibilitychange')();
+  await tick();
+  assert.equal(rejected, false);
+  assert.match(requestedImage.src, /originals\/requested\.jpg$/);
+  requestedImage.finishDecode();
+  assert.equal(await original, 'https://example.test/originals/requested.jpg');
+  await tick();
+  assert.equal(loader.snapshot().stage, 'paused');
+  assert.equal(transfers, 0);
+  const countWhileHidden = images.length;
+  page.hidden = false;
+  events.get('visibilitychange')();
+  await tick();
+  assert.ok(images.length > countWhileHidden, 'cover/preview work resumes after returning');
+  loader.destroy();
+});
