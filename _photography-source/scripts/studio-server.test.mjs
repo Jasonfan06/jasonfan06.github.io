@@ -91,20 +91,29 @@ test('original JPEG bytes and EXIF remain exact through publishing, serving, and
   assert.equal(result.collection.uploadRequestId, 'test-upload-request-0001');
   assert.equal(result.collection.coverPhoto.alt, 'An original portrait photograph.');
   const photo = result.collection.photos[0];
-  assert.equal(photo.original, true); assert.equal(photo.src, photo.fullSrc); assert.equal(photo.variants, undefined);
+  assert.equal(photo.original, true); assert.notEqual(photo.src, photo.fullSrc); assert.equal(photo.variants.length, 1);
+  assert.equal(result.collection.coverPhoto.src, photo.src);
+  assert.match(photo.src, /^optimized\/evening-light-[a-f0-9-]+\/[a-f0-9-]+\/2\.webp$/);
+  assert.deepEqual(photo.variants.map(({width,height}) => ({width,height})), [{width:2,height:3}]);
   assert.equal(photo.width, 2); assert.equal(photo.height, 3); // Oriented display dimensions; stored JPEG remains unchanged.
   assert.equal(photo.byteSize, original.length); assert.equal(photo.sha256, createHash('sha256').update(original).digest('hex'));
-  assert.match(photo.src, /^originals\/evening-light-[a-f0-9-]+\/[a-f0-9-]+\.jpg$/);
+  assert.match(photo.fullSrc, /^originals\/evening-light-[a-f0-9-]+\/[a-f0-9-]+\.jpg$/);
   const remoteFile = (name, binary = false) => run('git', ['--git-dir', f.remote, 'show', `main:${name}`], binary ? { encoding: 'buffer' } : {});
   assert.equal((await remoteFile('index.html')).stdout, 'PERSONAL WEBSITE UNCHANGED');
   const gallery = JSON.parse((await remoteFile('photography/gallery.json')).stdout);
   assert.equal(gallery.collections.length, 2); assert.equal(gallery.collections[0].id, 'existing');
   assert.equal(JSON.parse((await remoteFile('_photography-source/public/gallery.json')).stdout).collections.length, 2);
-  assert.ok((await fs.readFile(path.join(f.root, 'public', photo.src))).equals(original));
-  assert.ok((await remoteFile(`photography/${photo.src}`, true)).stdout.equals(original));
-  assert.ok((await remoteFile(`_photography-source/public/${photo.src}`, true)).stdout.equals(original));
-  const served = await fetch(`${f.origin}/${photo.src}`); assert.equal(served.headers.get('content-type'), 'image/jpeg');
+  assert.ok((await fs.readFile(path.join(f.root, 'public', photo.fullSrc))).equals(original));
+  assert.ok((await remoteFile(`photography/${photo.fullSrc}`, true)).stdout.equals(original));
+  assert.ok((await remoteFile(`_photography-source/public/${photo.fullSrc}`, true)).stdout.equals(original));
+  const served = await fetch(`${f.origin}/${photo.fullSrc}`); assert.equal(served.headers.get('content-type'), 'image/jpeg');
   assert.ok(Buffer.from(await served.arrayBuffer()).equals(original));
+  const display = Buffer.from(await (await fetch(`${f.origin}/${photo.src}`)).arrayBuffer());
+  assert.deepEqual(webpDimensions(display), {width:2,height:3});
+  assert.ok(!display.equals(original));
+  assert.equal(display.length, photo.variants[0].byteSize);
+  assert.ok((await remoteFile(`photography/${photo.src}`, true)).stdout.equals(display));
+  assert.ok((await remoteFile(`_photography-source/public/${photo.src}`, true)).stdout.equals(display));
   assert.equal((await (await fetch(`${f.origin}/gallery.json`)).json()).collections.length, 2);
   const retry = await f.send('/api/sets', payload()); assert.equal(retry.status, 201); assert.equal((await retry.json()).commit, result.commit);
   assert.equal(JSON.parse((await remoteFile('photography/gallery.json')).stdout).collections.length, 2);
@@ -133,7 +142,25 @@ test('failed original publication can resume without duplicate sets or altered b
   const resumed = await f.send('/api/retry', {}); assert.equal(resumed.status, 201, JSON.stringify(await resumed.clone().json()));
   const result = await resumed.json();
   const gallery = JSON.parse((await run('git', ['--git-dir', f.remote, 'show', 'main:photography/gallery.json'])).stdout); assert.equal(gallery.collections.length, 2);
-  assert.ok((await fs.readFile(path.join(f.root, 'public', result.collection.photos[0].src))).equals(original));
+  assert.ok((await fs.readFile(path.join(f.root, 'public', result.collection.photos[0].fullSrc))).equals(original));
   assert.equal((await (await fetch(`${f.origin}/api/session`)).json()).pending, null);
   assert.equal((await f.send('/api/retry', {})).status, 404);
+});
+
+
+test('preview generation failure never commits a set or falls back to the full original', async (t) => {
+  const f = await fixture(t);
+  const before = (await run('git', ['--git-dir', f.remote, 'rev-parse', 'main'])).stdout.trim();
+  // Keep the real JPEG frame header but remove the image data, making Pillow reject it.
+  const truncated = original.subarray(0, original.indexOf(Buffer.from([0xff, 0xc0])) + 19);
+  assert.equal(originalImageInfo(truncated, truncated.length).width, 3);
+  assert.equal((await f.upload(undefined, truncated)).status, 201);
+  const response = await f.send('/api/sets', payload());
+  assert.equal(response.status, 500);
+  assert.match((await response.json()).error, /Display copies could not be prepared/);
+  assert.equal((await run('git', ['--git-dir', f.remote, 'rev-parse', 'main'])).stdout.trim(), before);
+  const gallery = JSON.parse(await fs.readFile(path.join(f.root, 'public/gallery.json'), 'utf8'));
+  assert.equal(gallery.collections.length, 1);
+  const staged = path.join(f.root, '.canoe-studio/uploads/test-upload-request-0001', `${photoId}.original`);
+  assert.ok((await fs.readFile(staged)).equals(truncated));
 });

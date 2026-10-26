@@ -5,6 +5,8 @@
   overflow: hidden;
   pointer-events: none;
   user-select: none;
+  contain: strict;
+  isolation: isolate;
   animation: aperture-failsafe 3.2s step-end forwards;
 }
 

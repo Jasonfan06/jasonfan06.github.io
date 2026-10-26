@@ -25,11 +25,13 @@ function easeInOut(value) {
 }
 
 /** A decorative, nine-blade iris reveal. Safe to replay with PortfolioAperture.play(). */
-export default function Aperture({ brand = 'Canoe' }) {
+export default function Aperture({ brand = 'Canoe', onStart, onComplete }) {
   const [run, setRun] = useState(0);
   const [visible, setVisible] = useState(true);
   const blades = useRef([]);
   const wordmark = useRef(null);
+  const callbacks = useRef({ onStart, onComplete });
+  callbacks.current = { onStart, onComplete };
 
   useEffect(() => {
     const controller = {
@@ -46,16 +48,25 @@ export default function Aperture({ brand = 'Canoe' }) {
 
   useEffect(() => {
     if (!visible) return undefined;
+    callbacks.current.onStart?.();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setVisible(false);
+      callbacks.current.onComplete?.();
       return undefined;
     }
 
     let frame;
     let startedAt;
     let canceled = false;
+    let finished = false;
     const duration = 1380;
     const delay = 200;
+    const complete = () => {
+      if (canceled || finished) return;
+      finished = true;
+      setVisible(false);
+      callbacks.current.onComplete?.();
+    };
 
     const paint = (radius, rotation) => {
       blades.current.forEach((blade, index) => {
@@ -78,12 +89,12 @@ export default function Aperture({ brand = 'Canoe' }) {
       }
 
       if (progress < 1) frame = window.requestAnimationFrame(animate);
-      else setVisible(false);
+      else complete();
     };
 
     frame = window.requestAnimationFrame(animate);
     // Decorative animation must never obstruct the portfolio after a paused frame.
-    const fallback = window.setTimeout(() => setVisible(false), duration + delay + 1200);
+    const fallback = window.setTimeout(complete, duration + delay + 1200);
     return () => {
       canceled = true;
       window.cancelAnimationFrame(frame);

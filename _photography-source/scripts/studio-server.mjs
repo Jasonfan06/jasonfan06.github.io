@@ -11,7 +11,9 @@ import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const runFile = promisify(execFile);
-const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = path.resolve(SCRIPT_DIRECTORY, '..');
+const PREVIEW_SCRIPT = path.join(SCRIPT_DIRECTORY, 'create-photo-previews.py');
 const REMOTE = 'https://github.com/Jasonfan06/jasonfan06.github.io.git';
 const PUBLIC_URL = 'https://jasonfan06.github.io/photography/';
 const MAX_BODY = 2 * 1024 * 1024;
@@ -276,7 +278,7 @@ export function createStudioServer(options = {}) {
 
   async function syncLocal(transaction, gallery) {
     for (const item of transaction.files) {
-      if (!safeImagePath(item.src) || (item.staged && !/^[a-f0-9-]+\.(?:jpg|jpeg|png|webp|avif)$/.test(item.staged))) throw new ApiError(409, 'The pending set contains an invalid image path. No files were changed.');
+      if (!safeImagePath(item.src) || (item.staged && !/^[a-f0-9-]+(?:-[0-9]+)?\.(?:jpg|jpeg|png|webp|avif)$/.test(item.staged))) throw new ApiError(409, 'The pending set contains an invalid image path. No files were changed.');
       const destination = path.join(root, 'public', item.src);
       await fs.mkdir(path.dirname(destination), { recursive: true });
       const staged = path.join(pendingFiles, item.staged);
@@ -354,11 +356,43 @@ export function createStudioServer(options = {}) {
     for (let index = 0; index < upload.photos.length; index++) {
       const input = upload.photos[index];
       const photoId = randomUUID();
-      const src = `originals/${id}/${photoId}.${input.extension}`;
+      const fullSrc = `originals/${id}/${photoId}.${input.extension}`;
       const staged = `${photoId}.${input.extension}`;
-      await fs.copyFile(input.file, path.join(pendingFiles, staged));
-      files.push({ src, staged });
-      photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src, fullSrc: src, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256 });
+      const stagedOriginal = path.join(pendingFiles, staged);
+      await fs.copyFile(input.file, stagedOriginal);
+      files.push({ src: fullSrc, staged });
+      const previewDirectory = path.join(pendingFiles, `.previews-${photoId}`);
+      let preview;
+      const variants = [];
+      try {
+        try {
+          const { stdout } = await runFile(process.env.PYTHON || 'python3', [PREVIEW_SCRIPT, stagedOriginal, previewDirectory], { encoding: 'utf8', timeout: 120000, maxBuffer: 1024 * 1024 });
+          preview = JSON.parse(stdout);
+        } catch (error) {
+          console.error('Canoe Studio could not create display copies:', String(error.stderr || error.message).trim().slice(0, 1000));
+          throw new ApiError(500, 'Display copies could not be prepared. Your original photos are saved unchanged; click Publish to retry.');
+        }
+        const widths = [...new Set([600, 1200, 2000].map((width) => Math.min(width, input.width)))];
+        if (preview.width !== input.width || preview.height !== input.height || !Array.isArray(preview.variants) || preview.variants.length !== widths.length) throw new ApiError(500, 'Display copies did not match the photograph. Your originals are saved unchanged; please retry.');
+        const seen = new Set();
+        for (const variant of preview.variants) {
+          if (!widths.includes(variant.width) || seen.has(variant.width) || variant.file !== `${variant.width}.webp` || variant.height !== Math.max(1, Math.round(input.height * variant.width / input.width))) throw new ApiError(500, 'Display copies could not be verified. Your original photos are unchanged.');
+          seen.add(variant.width);
+          const source = path.join(previewDirectory, variant.file);
+          const bytes = await fs.readFile(source);
+          const dimensions = webpDimensions(bytes);
+          if (dimensions.width !== variant.width || dimensions.height !== variant.height || bytes.length !== variant.byteSize) throw new ApiError(500, 'Display copies could not be verified. Your original photos are unchanged.');
+          const src = `optimized/${id}/${photoId}/${variant.width}.webp`;
+          const stagedPreview = `${photoId}-${variant.width}.webp`;
+          await fs.rename(source, path.join(pendingFiles, stagedPreview));
+          files.push({ src, staged: stagedPreview });
+          variants.push({ src, width: variant.width, height: variant.height, byteSize: variant.byteSize });
+        }
+      } finally { await fs.rm(previewDirectory, { recursive: true, force: true }); }
+      variants.sort((first, second) => first.width - second.width);
+      const display = variants.find((variant) => variant.width >= 1200) || variants.at(-1);
+      photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src: display.src, fullSrc, srcSet: variants.map((variant) => `${variant.src} ${variant.width}w`).join(', '), variants, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256, previewVersion: 1 });
+
     }
     const coverPhoto = photos[upload.coverIndex];
     const collection = { id, title: upload.title, folder: upload.title, cover: coverPhoto.src, coverPhoto, count: photos.length, photos, uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint };
@@ -433,7 +467,7 @@ export function createStudioServer(options = {}) {
     const existing = gallery.collections.find((collection) => collection.uploadRequestId === upload.requestId);
     if (existing) {
       if (existing.uploadFingerprint && existing.uploadFingerprint !== upload.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
-      const files = existing.photos.flatMap((photo) => photo.variants?.map((variant) => ({ src: variant.src, staged: '' })) || [{ src: photo.src, staged: '' }]);
+      const files = [...new Set(existing.photos.flatMap((photo) => [photo.src, photo.fullSrc, ...(photo.variants?.map((variant) => variant.src) || [])]).filter(Boolean))].map((src) => ({ src, staged: '' }));
       await syncLocal({ files }, gallery);
       return { collection: existing, url: `${publicUrl}#${encodeURIComponent(existing.id)}`, commit: (await git(['rev-parse', 'origin/main'])).stdout.trim() };
     }
