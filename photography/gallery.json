@@ -1325,6 +1325,203 @@
       ],
       "uploadRequestId": "930faabd-b722-4a34-b611-c98603d2fe1e",
       "uploadFingerprint": "f9043fe4af86b8b986e1f467fef288b90260fec6054c5097f21add3fd376f96d"
+    },
+    {
+      "id": "speed-2890320c",
+      "title": "Speed",
+      "folder": "Speed",
+      "cover": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/800.webp",
+      "coverPhoto": {
+        "id": "speed-2890320c-1",
+        "title": "DSC05514",
+        "alt": "Speed, photograph 1",
+        "filename": "DSC05514.jpg",
+        "uploadId": "80b7d2e5-62f5-4d9b-9a38-f70c672f58e9",
+        "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp",
+        "fullSrc": "originals/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7.jpg",
+        "srcSet": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/600.webp 600w, optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp 1200w, optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/2000.webp 2000w",
+        "variants": [
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/600.webp",
+            "width": 600,
+            "height": 400,
+            "byteSize": 36654
+          },
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 97494
+          },
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/2000.webp",
+            "width": 2000,
+            "height": 1333,
+            "byteSize": 211026
+          }
+        ],
+        "width": 7008,
+        "height": 4672,
+        "original": true,
+        "byteSize": 16923586,
+        "sha256": "dae49035c9492c2f69e8435fb6397fa420d8b142594470b453526ae1a7f15dd2",
+        "previewVersion": 1,
+        "coverSrc": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 12164
+          },
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 25080
+          },
+          {
+            "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 43900
+          }
+        ]
+      },
+      "count": 3,
+      "photos": [
+        {
+          "id": "speed-2890320c-1",
+          "title": "DSC05514",
+          "alt": "Speed, photograph 1",
+          "filename": "DSC05514.jpg",
+          "uploadId": "80b7d2e5-62f5-4d9b-9a38-f70c672f58e9",
+          "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp",
+          "fullSrc": "originals/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7.jpg",
+          "srcSet": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/600.webp 600w, optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp 1200w, optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/2000.webp 2000w",
+          "variants": [
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/600.webp",
+              "width": 600,
+              "height": 400,
+              "byteSize": 36654
+            },
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 97494
+            },
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/2000.webp",
+              "width": 2000,
+              "height": 1333,
+              "byteSize": 211026
+            }
+          ],
+          "width": 7008,
+          "height": 4672,
+          "original": true,
+          "byteSize": 16923586,
+          "sha256": "dae49035c9492c2f69e8435fb6397fa420d8b142594470b453526ae1a7f15dd2",
+          "previewVersion": 1,
+          "coverSrc": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 12164
+            },
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 25080
+            },
+            {
+              "src": "optimized/speed-2890320c/04ae6aa8-f4ce-48e2-874e-ec4555497ae7/cover/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 43900
+            }
+          ]
+        },
+        {
+          "id": "speed-2890320c-2",
+          "title": "DSC05505",
+          "alt": "Speed, photograph 2",
+          "filename": "DSC05505.jpg",
+          "uploadId": "e47b6c73-ba6e-439a-8b8a-8a0359c66be7",
+          "src": "optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/1200.webp",
+          "fullSrc": "originals/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3.jpg",
+          "srcSet": "optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/600.webp 600w, optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/1200.webp 1200w, optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/2000.webp 2000w",
+          "variants": [
+            {
+              "src": "optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/600.webp",
+              "width": 600,
+              "height": 400,
+              "byteSize": 25668
+            },
+            {
+              "src": "optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 68622
+            },
+            {
+              "src": "optimized/speed-2890320c/eb1fccaf-d4e3-4081-9a92-2315682da2e3/2000.webp",
+              "width": 2000,
+              "height": 1333,
+              "byteSize": 201736
+            }
+          ],
+          "width": 2880,
+          "height": 1920,
+          "original": true,
+          "byteSize": 2147892,
+          "sha256": "006431d9b5a7ad349223f1485c2faf5990bb59803781dce50a7b02ba5faae4d0",
+          "previewVersion": 1
+        },
+        {
+          "id": "speed-2890320c-3",
+          "title": "DSC05557",
+          "alt": "Speed, photograph 3",
+          "filename": "DSC05557.jpg",
+          "uploadId": "3b0f4179-9c2c-4904-a353-bc5e6de95c37",
+          "src": "optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/1200.webp",
+          "fullSrc": "originals/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd.jpg",
+          "srcSet": "optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/600.webp 600w, optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/1200.webp 1200w, optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/2000.webp 2000w",
+          "variants": [
+            {
+              "src": "optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/600.webp",
+              "width": 600,
+              "height": 400,
+              "byteSize": 37832
+            },
+            {
+              "src": "optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 97870
+            },
+            {
+              "src": "optimized/speed-2890320c/aae1608d-e875-47cf-8574-ebdfb91db5dd/2000.webp",
+              "width": 2000,
+              "height": 1333,
+              "byteSize": 201354
+            }
+          ],
+          "width": 7008,
+          "height": 4672,
+          "original": true,
+          "byteSize": 16912935,
+          "sha256": "3789c6a2be4cdb47890216bfd83eab9f65733dc96809eaf2fe473097100c003c",
+          "previewVersion": 1
+        }
+      ],
+      "uploadRequestId": "94440dd6-0773-46cf-9729-1a5bd4f9dd6e",
+      "uploadFingerprint": "b7cb9d73a1a17f722da784da103c27b70a30740b17265ee96666a8e373b65e17"
     }
   ]
 }
