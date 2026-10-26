@@ -128,17 +128,35 @@ export function originalImageInfo(header, byteSize) {
   throw new ApiError(400, 'Choose an original JPEG, PNG, WebP, or AVIF photograph.');
 }
 
-async function validateUpload(input, resolvePhoto) {
+const collectionRevision = (collection) => createHash('sha256').update(JSON.stringify(collection)).digest('hex');
+function coverCrop(value = { x: 0.5, y: 0.5, zoom: 1 }) {
+  if (!value || ['x', 'y', 'zoom'].some((key) => !Number.isFinite(value[key])) || value.x < 0 || value.x > 1 || value.y < 0 || value.y > 1 || value.zoom < 1 || value.zoom > 3) throw new ApiError(400, 'Choose a valid cover position and zoom between 1 and 3.');
+  return { x: value.x, y: value.y, zoom: value.zoom };
+}
+
+async function validateUpload(input, resolvePhoto, collection = null) {
   const title = cleanText(input?.title, 120, 'Set name');
   if (!title) throw new ApiError(400, 'Enter a name for the set.');
   if (!Array.isArray(input.photos) || input.photos.length < 1 || input.photos.length > 30) throw new ApiError(400, 'Choose between 1 and 30 photographs.');
   if (!Number.isInteger(input.coverIndex) || input.coverIndex < 0 || input.coverIndex >= input.photos.length) throw new ApiError(400, 'Choose a cover photograph.');
   if (!validUploadId(input.requestId)) throw new ApiError(400, 'The draft identifier is invalid. Refresh the studio and try again.');
   const fingerprint = createHash('sha256').update(JSON.stringify([title, input.coverIndex]));
+  const crop = coverCrop(input.coverCrop);
+  if (input.coverCrop !== undefined) fingerprint.update(JSON.stringify(crop));
+  if (collection) fingerprint.update(JSON.stringify([collection.id, input.baseRevision]));
   const photos = [];
   const seen = new Set();
   for (let index = 0; index < input.photos.length; index++) {
     const photo = input.photos[index];
+    if (collection && photo && Object.hasOwn(photo, 'existingId')) {
+      const previous = collection.photos.find((item) => item.id === photo.existingId);
+      if (!previous || photo.uploadId || seen.has(`existing:${photo.existingId}`)) throw new ApiError(400, 'Choose each existing photograph once, from this set.');
+      seen.add(`existing:${photo.existingId}`);
+      const alt = cleanText(photo.alt, 600, 'Photo description', previous.alt || '') || `${title}, photograph ${index + 1}`;
+      fingerprint.update(JSON.stringify([previous.id, alt, previous.sha256 || previous.fullSrc || previous.src]));
+      photos.push({ existingPhoto: previous, alt });
+      continue;
+    }
     if (!photo || !Number.isInteger(photo.width) || !Number.isInteger(photo.height) || photo.width < 1 || photo.height < 1 || photo.width > 50000 || photo.height > 50000 || photo.width * photo.height > 200_000_000) throw new ApiError(400, `Photograph ${index + 1} has invalid dimensions.`);
     if (!validUploadId(photo.uploadId) || seen.has(photo.uploadId)) throw new ApiError(400, 'Each photograph needs its own completed upload.');
     seen.add(photo.uploadId);
@@ -149,7 +167,7 @@ async function validateUpload(input, resolvePhoto) {
     fingerprint.update(JSON.stringify([filename, alt, photo.width, photo.height, original.sha256]));
     photos.push({ ...original, filename, alt, width: photo.width, height: photo.height, uploadId: photo.uploadId });
   }
-  return { title, coverIndex: input.coverIndex, photos, requestId: input.requestId, fingerprint: fingerprint.digest('hex') };
+  return { title, coverIndex: input.coverIndex, coverCrop: crop, photos, requestId: input.requestId, fingerprint: fingerprint.digest('hex'), previousCollection: collection, baseRevision: input.baseRevision };
 }
 
 function readBody(request) {
@@ -348,14 +366,53 @@ export function createStudioServer(options = {}) {
     } catch (error) { if (error.code === 'ENOENT') throw new ApiError(400, 'A photograph has not finished uploading. Upload it again.'); throw error; }
   }
 
+  async function stageCover(setId, photo, source, crop, files) {
+    const coverId = randomUUID();
+    const directory = path.join(pendingFiles, `.covers-${coverId}`);
+    const variants = [];
+    try {
+      let cover;
+      try {
+        const { stdout } = await runFile(process.env.PYTHON || 'python3', [COVER_SCRIPT, source, directory, JSON.stringify(crop)], { encoding: 'utf8', timeout: 120000, maxBuffer: 1024 * 1024 });
+        cover = JSON.parse(stdout);
+      } catch (error) {
+        console.error('Canoe Studio could not create cover copies:', String(error.stderr || error.message).trim().slice(0, 1000));
+        throw new ApiError(500, 'Cover copies could not be prepared. Your originals are saved unchanged; click Publish to retry.');
+      }
+      const maximum = Math.max(1, Math.floor(Math.min(photo.width, photo.height * 1.5) / crop.zoom));
+      const widths = [...new Set([480, 800, 1200].map((width) => Math.min(width, maximum)))];
+      if (cover.width !== photo.width || cover.height !== photo.height || !Array.isArray(cover.variants) || cover.variants.length !== widths.length) throw new ApiError(500, 'Cover copies did not match the photograph. Your originals are unchanged.');
+      const seen = new Set();
+      for (const variant of cover.variants) {
+        if (!widths.includes(variant.width) || seen.has(variant.width) || variant.file !== `${variant.width}.webp` || variant.height !== Math.max(1, Math.round(variant.width / 1.5))) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
+        seen.add(variant.width);
+        const generated = path.join(directory, variant.file);
+        const bytes = await fs.readFile(generated);
+        const dimensions = webpDimensions(bytes);
+        if (dimensions.width !== variant.width || dimensions.height !== variant.height || bytes.length !== variant.byteSize) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
+        const src = `optimized/${setId}/${coverId}/cover/${variant.width}.webp`;
+        const staged = `${coverId}-0-${variant.width}.webp`;
+        await fs.rename(generated, path.join(pendingFiles, staged));
+        files.push({ src, staged });
+        variants.push({ src, width: variant.width, height: variant.height, byteSize: variant.byteSize });
+      }
+    } finally { await fs.rm(directory, { recursive: true, force: true }); }
+    variants.sort((first, second) => first.width - second.width);
+    const display = variants.find((variant) => variant.width >= 800) || variants.at(-1);
+    return { coverSrc: display.src, coverVariants: variants };
+  }
+
   async function stageTransaction(upload) {
     const slug = upload.title.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0,55) || 'set';
-    const id = `${slug}-${randomUUID().slice(0,8)}`;
+    const id = upload.previousCollection?.id || `${slug}-${randomUUID().slice(0,8)}`;
     const files = [];
+    const originalFiles = new Map();
+    await fs.rm(pendingFiles, { recursive: true, force: true });
     await fs.mkdir(pendingFiles, { recursive: true, mode: 0o700 });
     const photos = [];
     for (let index = 0; index < upload.photos.length; index++) {
       const input = upload.photos[index];
+      if (input.existingPhoto) { photos.push({ ...input.existingPhoto, alt: input.alt }); continue; }
       const photoId = randomUUID();
       const fullSrc = `originals/${id}/${photoId}.${input.extension}`;
       const staged = `${photoId}.${input.extension}`;
@@ -392,61 +449,69 @@ export function createStudioServer(options = {}) {
       } finally { await fs.rm(previewDirectory, { recursive: true, force: true }); }
       variants.sort((first, second) => first.width - second.width);
       const display = variants.find((variant) => variant.width >= 1200) || variants.at(-1);
-      photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src: display.src, fullSrc, srcSet: variants.map((variant) => `${variant.src} ${variant.width}w`).join(', '), variants, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256, previewVersion: 1 });
-      if (index === upload.coverIndex) {
-        const coverDirectory = path.join(pendingFiles, `.covers-${photoId}`);
-        const coverVariants = [];
-        try {
-          let cover;
-          try {
-            const { stdout } = await runFile(process.env.PYTHON || 'python3', [COVER_SCRIPT, stagedOriginal, coverDirectory], { encoding: 'utf8', timeout: 120000, maxBuffer: 1024 * 1024 });
-            cover = JSON.parse(stdout);
-          } catch (error) {
-            console.error('Canoe Studio could not create cover copies:', String(error.stderr || error.message).trim().slice(0, 1000));
-            throw new ApiError(500, 'Cover copies could not be prepared. Your originals are saved unchanged; click Publish to retry.');
-          }
-          const maximum = Math.max(1, Math.min(input.width, Math.floor(input.height * 1.5)));
-          const widths = [...new Set([480, 800, 1200].map((width) => Math.min(width, maximum)))];
-          if (cover.width !== input.width || cover.height !== input.height || !Array.isArray(cover.variants) || cover.variants.length !== widths.length) throw new ApiError(500, 'Cover copies did not match the photograph. Your originals are unchanged.');
-          const seen = new Set();
-          for (const variant of cover.variants) {
-            if (!widths.includes(variant.width) || seen.has(variant.width) || variant.file !== `${variant.width}.webp` || variant.height !== Math.max(1, Math.round(variant.width / 1.5))) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
-            seen.add(variant.width);
-            const source = path.join(coverDirectory, variant.file);
-            const bytes = await fs.readFile(source);
-            const dimensions = webpDimensions(bytes);
-            if (dimensions.width !== variant.width || dimensions.height !== variant.height || bytes.length !== variant.byteSize) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
-            const src = `optimized/${id}/${photoId}/cover/${variant.width}.webp`;
-            const stagedCover = `${photoId}-0-${variant.width}.webp`;
-            await fs.rename(source, path.join(pendingFiles, stagedCover));
-            files.push({ src, staged: stagedCover });
-            coverVariants.push({ src, width: variant.width, height: variant.height, byteSize: variant.byteSize });
-          }
-        } finally { await fs.rm(coverDirectory, { recursive: true, force: true }); }
-        coverVariants.sort((first, second) => first.width - second.width);
-        const coverDisplay = coverVariants.find((variant) => variant.width >= 800) || coverVariants.at(-1);
-        Object.assign(photos.at(-1), { coverSrc: coverDisplay.src, coverVariants });
-      }
+      photos.push({ id: `${id}-${photoId.slice(0,8)}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src: display.src, fullSrc, srcSet: variants.map((variant) => `${variant.src} ${variant.width}w`).join(', '), variants, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256, previewVersion: 1 });
+      originalFiles.set(photos.at(-1).id, stagedOriginal);
     }
-    const coverPhoto = photos[upload.coverIndex];
-    const collection = { id, title: upload.title, folder: upload.title, cover: coverPhoto.coverSrc, coverPhoto, count: photos.length, photos, uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint };
+    const selected = photos[upload.coverIndex];
+    const previous = upload.previousCollection;
+    const sameCover = previous?.coverPhoto?.id === selected.id && JSON.stringify(coverCrop(previous.coverCrop)) === JSON.stringify(upload.coverCrop) && selected.coverVariants?.length;
+    if (!sameCover) {
+      const original = originalFiles.get(selected.id);
+      let temporary;
+      try {
+        let source = original;
+        if (!source) {
+          const stored = selected.fullSrc || selected.src;
+          let decoded;
+          try { decoded = decodeURIComponent(stored); } catch { throw new ApiError(500, 'The original photograph path is invalid.'); }
+          if (!/^(photos|originals)\//.test(decoded) || decoded.includes('\\') || /[\u0000-\u001f]/.test(decoded) || decoded.split('/').some((part) => !part || part === '.' || part === '..')) throw new ApiError(500, 'The original photograph path is invalid.');
+          const { stdout } = await git(['show', `origin/main:photography/${decoded}`], { encoding: 'buffer', maxBuffer: MAX_ORIGINAL + 1024 });
+          if (selected.sha256 && createHash('sha256').update(stdout).digest('hex') !== selected.sha256) throw new ApiError(409, 'The original photograph changed. Open the set again before editing it.');
+          temporary = path.join(pendingFiles, `.cover-original-${randomUUID()}`);
+          await fs.writeFile(temporary, stdout, { mode: 0o600 });
+          source = temporary;
+        }
+        Object.assign(selected, await stageCover(id, selected, source, upload.coverCrop, files));
+      } finally { if (temporary) await fs.rm(temporary, { force: true }); }
+    }
+    const collection = {
+      ...(previous || {}), id, title: upload.title, folder: previous?.folder || upload.title,
+      cover: selected.coverSrc, coverPhoto: selected, coverCrop: upload.coverCrop, count: photos.length, photos,
+      ...(previous ? { lastEditRequestId: upload.requestId, lastEditFingerprint: upload.fingerprint } : { uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint }),
+    };
     const baseSha = (await git(['rev-parse', 'origin/main'])).stdout.trim();
-    const transaction = { requestId: upload.requestId, fingerprint: upload.fingerprint, baseSha, collection, files };
+    const transaction = { requestId: upload.requestId, fingerprint: upload.fingerprint, baseSha, collection, files, operation: upload.previousCollection ? 'edit' : 'create', baseRevision: upload.baseRevision };
     await atomicJson(pendingFile, transaction);
     return transaction;
   }
+
+  function matchesRequest(collection, transaction) {
+    return transaction.operation === 'edit'
+      ? collection.id === transaction.collection.id && collection.lastEditRequestId === transaction.requestId
+      : collection.uploadRequestId === transaction.requestId;
+  }
+  const savedFingerprint = (collection, transaction) => transaction.operation === 'edit' ? collection.lastEditFingerprint : collection.uploadFingerprint;
+  const publishedResult = (collection, commit) => ({ collection, revision: collectionRevision(collection), url: `${publicUrl}#${encodeURIComponent(collection.id)}`, commit });
 
   async function publishTransaction(transaction) {
     for (let attempt = 0; attempt < 3; attempt++) {
       await git(['fetch', 'origin', 'main']);
       const gallery = await remoteGallery();
-      const existing = gallery.collections.find((collection) => collection.uploadRequestId === transaction.requestId);
+      const existing = gallery.collections.find((collection) => matchesRequest(collection, transaction));
       if (existing) {
-        if (existing.uploadFingerprint && existing.uploadFingerprint !== transaction.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
+        if (savedFingerprint(existing, transaction) && savedFingerprint(existing, transaction) !== transaction.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
         await syncLocal(transaction, gallery);
-        return { collection: existing, url: `${publicUrl}#${encodeURIComponent(existing.id)}`, commit: (await git(['rev-parse', 'origin/main'])).stdout.trim() };
+        return publishedResult(existing, (await git(['rev-parse', 'origin/main'])).stdout.trim());
       }
       await cleanOwnedCheckout(transaction);
+      if (transaction.operation === 'edit') {
+        const current = gallery.collections.find((collection) => collection.id === transaction.collection.id);
+        if (!current || collectionRevision(current) !== transaction.baseRevision) {
+          await fs.rm(pendingFile, { force: true });
+          await fs.rm(pendingFiles, { recursive: true, force: true });
+          throw new ApiError(409, 'This set changed since you opened it. Reload the published sets and open it again before saving. Your published photographs were not changed.');
+        }
+      }
       transaction.baseSha = (await git(['rev-parse', 'origin/main'])).stdout.trim();
       transaction.commitSha = null;
       await atomicJson(pendingFile, transaction);
@@ -457,14 +522,14 @@ export function createStudioServer(options = {}) {
           await fs.copyFile(path.join(pendingFiles, item.staged), destination);
         }
       }
-      const updated = { ...gallery, collections: [...gallery.collections, transaction.collection] };
+      const updated = { ...gallery, collections: transaction.operation === 'edit' ? gallery.collections.map((collection) => collection.id === transaction.collection.id ? transaction.collection : collection) : [...gallery.collections, transaction.collection] };
       await atomicJson(path.join(repository, 'photography', 'gallery.json'), updated);
       await atomicJson(path.join(repository, '_photography-source', 'public', 'gallery.json'), updated);
       const paths = ['photography/gallery.json', '_photography-source/public/gallery.json', ...transaction.files.flatMap((item) => [`photography/${item.src}`, `_photography-source/public/${item.src}`])];
       await git(['add', '--', ...paths]);
       const staged = (await git(['diff', '--cached', '--name-only'])).stdout.trim().split('\n').filter(Boolean);
       if (staged.some((file) => !allowed(transaction, file))) throw new ApiError(409, 'The studio checkout has unrelated staged changes. Nothing was published.');
-      await git(['commit', '-m', `Add photography set: ${transaction.collection.title}\n\nCanoe-Upload: ${transaction.requestId}`]);
+      await git(['commit', '-m', `${transaction.operation === 'edit' ? 'Update' : 'Add'} photography set: ${transaction.collection.title}\n\nCanoe-Upload: ${transaction.requestId}`]);
       transaction.commitSha = (await git(['rev-parse', 'HEAD'])).stdout.trim();
       await atomicJson(pendingFile, transaction);
       try { await git(['push', 'origin', 'HEAD:refs/heads/main']); }
@@ -474,36 +539,48 @@ export function createStudioServer(options = {}) {
         try {
           await git(['fetch', 'origin', 'main']);
           const latest = await remoteGallery();
-          if (latest.collections.some((collection) => collection.uploadRequestId === transaction.requestId)) {
+          const accepted = latest.collections.find((collection) => matchesRequest(collection, transaction));
+          if (accepted) {
             await syncLocal(transaction, latest);
-            return { collection: transaction.collection, url: `${publicUrl}#${encodeURIComponent(transaction.collection.id)}`, commit: transaction.commitSha };
+            return publishedResult(accepted, transaction.commitSha);
           }
         } catch {}
         throw error;
       }
       await syncLocal(transaction, updated);
-      return { collection: transaction.collection, url: `${publicUrl}#${encodeURIComponent(transaction.collection.id)}`, commit: transaction.commitSha };
+      return publishedResult(transaction.collection, transaction.commitSha);
     }
     throw new ApiError(502, 'GitHub changed while the set was publishing. Your photos are saved; click Publish again to retry.');
   }
 
-  async function publish(input) {
+  async function publish(input, setId = null) {
     const saved = await pending();
-    if (saved && saved.requestId !== input?.requestId) throw new ApiError(409, 'A previous set is waiting to publish. Resume it first.');
-    const upload = await validateUpload(input, resolveOriginal);
-    await ensureRepository();
+    if (saved && (saved.requestId !== input?.requestId || (saved.operation === 'edit' ? saved.collection.id : null) !== setId)) throw new ApiError(409, 'A previous set is waiting to publish. Resume it first.');
+    let gallery;
+    let previous = null;
+    if (setId) {
+      await ensureRepository();
+      gallery = await remoteGallery();
+      previous = gallery.collections.find((collection) => collection.id === setId);
+      if (!previous) throw new ApiError(404, 'This set no longer exists. Reload the published sets.');
+      if (!/^[a-f0-9]{64}$/.test(input?.baseRevision || '')) throw new ApiError(400, 'Open the published set before saving changes.');
+      if (!saved && previous.lastEditRequestId !== input.requestId && collectionRevision(previous) !== input.baseRevision) throw new ApiError(409, 'This set changed since you opened it. Reload the published sets and open it again before saving.');
+    }
+    const upload = await validateUpload(input, resolveOriginal, previous);
+    if (!setId) { await ensureRepository(); gallery = await remoteGallery(); }
     if (saved) {
-      if (saved.requestId === upload.requestId && saved.fingerprint !== upload.fingerprint) throw new ApiError(409, 'This pending draft has changed. Retry with the original photos, or reopen the studio to recover it.');
-      if (saved.requestId !== upload.requestId) throw new ApiError(409, 'A previous set is waiting to publish. Resume it first.');
+      if (saved.fingerprint !== upload.fingerprint) throw new ApiError(409, 'This pending draft has changed. Resume the saved publication above first.');
       return publishTransaction(saved);
     }
-    const gallery = await remoteGallery();
-    const existing = gallery.collections.find((collection) => collection.uploadRequestId === upload.requestId);
+    const existing = gallery.collections.find((collection) => setId ? collection.id === setId && collection.lastEditRequestId === upload.requestId : collection.uploadRequestId === upload.requestId);
     if (existing) {
-      if (existing.uploadFingerprint && existing.uploadFingerprint !== upload.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
-      const files = [...new Set(existing.photos.flatMap((photo) => [photo.src, photo.fullSrc, photo.coverSrc, ...(photo.variants?.map((variant) => variant.src) || []), ...(photo.coverVariants?.map((variant) => variant.src) || [])]).filter(Boolean))].map((src) => ({ src, staged: '' }));
+      const fingerprint = setId ? existing.lastEditFingerprint : existing.uploadFingerprint;
+      if (fingerprint && fingerprint !== upload.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Open the set again to make another edit.');
+      // Only a newly-created set may need to recover missing local files. Retained
+      // photographs in an edit are never rewritten or downloaded from the browser.
+      const files = setId ? [] : [...new Set(existing.photos.flatMap((photo) => [photo.src, photo.fullSrc, photo.coverSrc, ...(photo.variants?.map((variant) => variant.src) || []), ...(photo.coverVariants?.map((variant) => variant.src) || [])]).filter(Boolean))].map((src) => ({ src, staged: '' }));
       await syncLocal({ files }, gallery);
-      return { collection: existing, url: `${publicUrl}#${encodeURIComponent(existing.id)}`, commit: (await git(['rev-parse', 'origin/main'])).stdout.trim() };
+      return publishedResult(existing, (await git(['rev-parse', 'origin/main'])).stdout.trim());
     }
     return publishTransaction(await stageTransaction(upload));
   }
@@ -526,8 +603,15 @@ export function createStudioServer(options = {}) {
         return;
       }
       if (url.pathname === '/api/gallery' && request.method === 'GET') {
-        const gallery = parseGallery(await fs.readFile(path.join(root, 'public', 'gallery.json'), 'utf8'));
-        json(response, 200, { collections: gallery.collections }); return;
+        let gallery;
+        if (url.searchParams.get('refresh') === '1') {
+          if (request.headers['x-canoe-token'] !== token) throw new ApiError(403, 'The studio session has expired. Refresh this page and try again.');
+          if (publishing) throw new ApiError(409, 'A set is publishing. Wait before reloading the published sets.');
+          publishing = true;
+          try { await ensureRepository(); gallery = await remoteGallery(); await atomicJson(path.join(root, 'public', 'gallery.json'), gallery); }
+          finally { publishing = false; }
+        } else gallery = parseGallery(await fs.readFile(path.join(root, 'public', 'gallery.json'), 'utf8'));
+        json(response, 200, { collections: gallery.collections, revisions: Object.fromEntries(gallery.collections.map((collection) => [collection.id, collectionRevision(collection)])) }); return;
       }
       if (url.pathname === '/api/status' && request.method === 'GET') {
         json(response, 200, { publishing, lastResult, pending: Boolean(await pending()) }); return;
@@ -539,7 +623,8 @@ export function createStudioServer(options = {}) {
         json(response, 201, await receiveOriginal(request, url));
         return;
       }
-      if (['/api/sets', '/api/retry'].includes(url.pathname) && request.method === 'POST') {
+      const editRoute = /^\/api\/sets\/([a-z0-9][a-z0-9-]*)$/.exec(url.pathname);
+      if ((['/api/sets', '/api/retry'].includes(url.pathname) || editRoute) && request.method === 'POST') {
         if (request.headers.origin !== origin || !/^application\/json(?:\s*;|$)/i.test(String(request.headers['content-type'] || ''))) throw new ApiError(403, 'Please publish from the studio page.');
         const supplied = request.headers['x-canoe-token'];
         if (typeof supplied !== 'string' || !/^[a-f0-9]{64}$/.test(supplied) || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) throw new ApiError(403, 'The studio session has expired. Refresh this page and try again.');
@@ -554,7 +639,7 @@ export function createStudioServer(options = {}) {
             const saved = await pending();
             if (!saved) throw new ApiError(404, 'There is no pending set to resume.');
             result = await publishTransaction(saved);
-          } else result = await publish(await readBody(request));
+          } else result = await publish(await readBody(request), editRoute?.[1] || null);
           lastResult = { ...result, publishedAt: new Date().toISOString() };
           json(response, 201, result);
         } catch (error) {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Aperture, ArrowLeft, ArrowUpRight, Check, CheckCircle2, ImagePlus, LoaderCircle, LockKeyhole, Plus, Upload, X } from 'lucide-react';
+import { Aperture, ArrowDown, ArrowLeft, ArrowUp, ArrowUpRight, Check, CheckCircle2, GripVertical, ImagePlus, LoaderCircle, LockKeyhole, Pencil, Plus, RefreshCw, Upload, X } from 'lucide-react';
+import CoverCrop, { DEFAULT_CROP } from './CoverCrop.jsx';
 import './studio.css';
 
 const MAX_FILES = 30;
@@ -48,26 +49,39 @@ function photoContentType(file) {
   return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' }[extension] || 'application/octet-stream';
 }
 
+const snapshot = (title, photos, coverId, crop) => JSON.stringify([title, photos.map((photo) => [photo.id, photo.alt]), coverId, crop]);
+const localAsset = (value) => `/${value.replace(/^\//, '')}`;
+
 export default function Studio() {
   const [session, setSession] = useState(null);
   const [connection, setConnection] = useState('loading');
   const [connectionError, setConnectionError] = useState('');
   const [existing, setExisting] = useState([]);
+  const [revisions, setRevisions] = useState({});
+  const [editing, setEditing] = useState(null);
   const [title, setTitle] = useState('');
   const [photos, setPhotos] = useState([]);
   const [coverId, setCoverId] = useState(null);
+  const [crop, setCrop] = useState({ ...DEFAULT_CROP });
   const [dragging, setDragging] = useState(false);
+  const [dragPhotoId, setDragPhotoId] = useState(null);
   const [error, setError] = useState('');
   const [stage, setStage] = useState(null);
   const [success, setSuccess] = useState(null);
   const input = useRef(null);
+  const editor = useRef(null);
   const urls = useRef(new Set());
   const requestId = useRef(makeRequestId());
   const submitLock = useRef(false);
+  const baseline = useRef(snapshot('', [], null, DEFAULT_CROP));
   const busy = Boolean(stage);
+  const locked = busy || Boolean(session?.pending);
+  const dirty = snapshot(title, photos, coverId, crop) !== baseline.current;
   const cover = photos.find((photo) => photo.id === coverId) || photos[0];
-  const canPublish = connection === 'ready' && !session?.pending && title.trim().length > 0 && photos.length > 0 && !busy;
+  const canPublish = connection === 'ready' && !locked && title.trim().length > 0 && photos.length > 0 && (!editing || dirty);
   const publicUrl = session?.publicUrl || 'https://jasonfan06.github.io/photography/';
+  const changed = () => { requestId.current = makeRequestId(); setError(''); };
+  const changeCrop = (next) => { setCrop(next); changed(); };
 
   useEffect(() => {
     document.title = 'Canoe Studio';
@@ -75,36 +89,55 @@ export default function Studio() {
     async function connect() {
       try {
         const current = await readJson(await fetch('/api/session', { signal: controller.signal, cache: 'no-store' }));
-        if (!current.token) throw new Error('Open the private Canoe Studio on this Mac to upload photographs.');
-        const data = await readJson(await fetch('/api/gallery', {
-          signal: controller.signal, cache: 'no-store', headers: { 'X-Canoe-Token': current.token },
-        }));
-        setSession(current);
-        setExisting(Array.isArray(data.collections) ? data.collections : []);
-        setConnection('ready');
+        if (!current.token) throw new Error('Open the private Canoe Studio on this Mac to manage photographs.');
+        const data = await readJson(await fetch('/api/gallery', { signal: controller.signal, cache: 'no-store', headers: { 'X-Canoe-Token': current.token } }));
+        setSession(current); setExisting(data.collections || []); setRevisions(data.revisions || {}); setConnection('ready');
       } catch (err) {
         if (err.name === 'AbortError') return;
-        setConnection('unavailable');
-        setConnectionError(err.message || 'The private studio could not connect. Please reopen Canoe Studio on this Mac.');
+        setConnection('unavailable'); setConnectionError(err.message || 'The private studio could not connect. Reopen Canoe Studio on this Mac.');
       }
     }
     connect();
     return () => controller.abort();
   }, []);
-
   useEffect(() => () => { urls.current.forEach((url) => URL.revokeObjectURL(url)); }, []);
-
   useEffect(() => {
-    if ((!photos.length && !title.trim() && !busy) || success) return undefined;
+    if ((!dirty && !busy) || success) return undefined;
     const protectDraft = (event) => { event.preventDefault(); event.returnValue = ''; };
     window.addEventListener('beforeunload', protectDraft);
     return () => window.removeEventListener('beforeunload', protectDraft);
-  }, [photos.length, title, success, busy]);
+  }, [dirty, busy, success]);
 
+  function clearUrls() { urls.current.forEach((url) => URL.revokeObjectURL(url)); urls.current.clear(); }
+  function maySwitch() { return !dirty || success || window.confirm('Discard your unsaved changes?'); }
+  function newDraft() {
+    if (!maySwitch()) return;
+    clearUrls(); setEditing(null); setPhotos([]); setCoverId(null); setCrop({ ...DEFAULT_CROP }); setTitle(''); setSuccess(null); changed();
+    baseline.current = snapshot('', [], null, DEFAULT_CROP);
+  }
+  function editSet(collection, revision = revisions[collection.id]) {
+    if (locked || !maySwitch()) return;
+    if (!revision) { setError('Reload the published sets to open this set for editing.'); return; }
+    clearUrls();
+    const items = collection.photos.map((photo) => ({ id: photo.id, existingId: photo.id, filename: photo.filename || `${photo.title || 'Photograph'}.jpg`, alt: photo.alt || '', url: localAsset(photo.src), remoteUrl: `${publicUrl}${photo.src}`, width: photo.width, height: photo.height, fingerprint: `existing:${photo.id}` }));
+    const selected = items.find((photo) => photo.id === collection.coverPhoto?.id)?.id || items[0]?.id || null;
+    const position = { ...DEFAULT_CROP, ...collection.coverCrop };
+    baseline.current = snapshot(collection.title, items, selected, position);
+    setEditing({ id: collection.id, revision }); setTitle(collection.title); setPhotos(items); setCoverId(selected); setCrop(position); setSuccess(null); changed();
+    editor.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  async function refreshSets() {
+    if (locked) return;
+    setStage({ phase: 'refreshing' }); setError('');
+    try {
+      const data = await readJson(await fetch('/api/gallery?refresh=1', { cache: 'no-store', headers: { 'X-Canoe-Token': session.token } }));
+      setExisting(data.collections || []); setRevisions(data.revisions || {});
+    } catch (err) { setError(err.message); }
+    finally { setStage(null); }
+  }
   function addFiles(list) {
-    if (busy || success) return;
-    setDragging(false);
-    setError('');
+    if (locked || success) return;
+    setDragging(false); setError('');
     const files = [...list];
     if (!files.length) return;
     const unsupported = files.find((file) => !EXTENSIONS.test(file.name));
@@ -112,131 +145,82 @@ export default function Studio() {
     const oversized = files.find((file) => file.size > MAX_FILE_BYTES);
     if (oversized) { setError(`“${oversized.name}” is larger than 50 MB. Choose a smaller copy.`); return; }
     const fingerprints = new Set(photos.map((photo) => photo.fingerprint));
-    const unique = files.filter((file) => {
-      const fingerprint = `${file.name}:${file.size}:${file.lastModified}`;
-      if (fingerprints.has(fingerprint)) return false;
-      fingerprints.add(fingerprint);
-      return true;
-    });
+    const unique = files.filter((file) => { const value = `${file.name}:${file.size}:${file.lastModified}`; if (fingerprints.has(value)) return false; fingerprints.add(value); return true; });
     if (photos.length + unique.length > MAX_FILES) { setError('A set can contain up to 30 photographs. Choose fewer files or create another set.'); return; }
-    const additions = unique.map((file) => {
-      const url = URL.createObjectURL(file);
-      urls.current.add(url);
-      return { id: crypto.randomUUID(), file, url, alt: '', fingerprint: `${file.name}:${file.size}:${file.lastModified}` };
-    });
+    const additions = unique.map((file) => { const url = URL.createObjectURL(file); urls.current.add(url); return { id: crypto.randomUUID(), file, filename: file.name, url, alt: '', fingerprint: `${file.name}:${file.size}:${file.lastModified}` }; });
     if (!additions.length) { setError('Those photographs are already in this set.'); return; }
     setPhotos((current) => [...current, ...additions]);
-    if (!coverId) setCoverId(additions[0].id);
-    requestId.current = makeRequestId();
+    if (!coverId) { setCoverId(additions[0].id); setCrop({ ...DEFAULT_CROP }); }
+    changed();
   }
-
   function removePhoto(id) {
+    if (locked) return;
     const photo = photos.find((item) => item.id === id);
-    if (photo) { URL.revokeObjectURL(photo.url); urls.current.delete(photo.url); }
+    if (photo && urls.current.has(photo.url)) { URL.revokeObjectURL(photo.url); urls.current.delete(photo.url); }
     const remaining = photos.filter((item) => item.id !== id);
     setPhotos(remaining);
-    if (coverId === id) setCoverId(remaining[0]?.id || null);
-    setError('');
-    requestId.current = makeRequestId();
+    if (coverId === id) { setCoverId(remaining[0]?.id || null); setCrop({ ...DEFAULT_CROP }); }
+    changed();
   }
-
-  function newDraft() {
-    urls.current.forEach((url) => URL.revokeObjectURL(url));
-    urls.current.clear();
-    setPhotos([]);
-    setCoverId(null);
-    setTitle('');
-    setError('');
-    setSuccess(null);
-    requestId.current = makeRequestId();
+  function movePhoto(id, destination) {
+    if (locked) return;
+    const current = photos.findIndex((photo) => photo.id === id);
+    if (current < 0 || destination < 0 || destination >= photos.length || current === destination) return;
+    const next = [...photos]; const [photo] = next.splice(current, 1); next.splice(destination, 0, photo); setPhotos(next); changed();
   }
-
   function finishPublishing(result, fallbackTitle) {
-    setSuccess({ ...result, title: result.collection?.title || fallbackTitle });
+    setSuccess({ ...result, title: result.collection?.title || fallbackTitle, updated: Boolean(editing) });
     setSession((current) => ({ ...current, pending: null }));
-    if (result.collection) setExisting((current) => [...current.filter((item) => item.id !== result.collection.id), result.collection]);
-  }
-
-  async function resumePublishing() {
-    if (!session?.pending || busy || submitLock.current) return;
-    submitLock.current = true;
-    setError('');
-    setStage({ phase: 'resuming' });
-    try {
-      const result = await readJson(await fetch('/api/retry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Canoe-Token': session.token },
-        body: '{}',
-      }));
-      finishPublishing(result, session.pending.title);
-    } catch (err) {
-      setError(err.message || 'Publishing could not be resumed. Your saved set is still here; please try again.');
-    } finally {
-      setStage(null);
-      submitLock.current = false;
+    if (result.collection) {
+      setExisting((current) => current.some((item) => item.id === result.collection.id) ? current.map((item) => item.id === result.collection.id ? result.collection : item) : [...current, result.collection]);
+      setRevisions((current) => ({ ...current, [result.collection.id]: result.revision }));
     }
   }
-
+  async function resumePublishing() {
+    if (!session?.pending || busy || submitLock.current) return;
+    submitLock.current = true; setError(''); setStage({ phase: 'resuming' });
+    try {
+      const result = await readJson(await fetch('/api/retry', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Canoe-Token': session.token }, body: '{}' }));
+      finishPublishing(result, session.pending.title);
+    } catch (err) { setError(err.message || 'Publishing could not be resumed. Your saved set is still here; please try again.'); await renewSession(); }
+    finally { setStage(null); submitLock.current = false; }
+  }
+  async function renewSession() {
+    try { const latest = await readJson(await fetch('/api/session', { cache: 'no-store' })); setSession((current) => ({ ...current, token: latest.token, pending: latest.pending || null })); }
+    catch { /* Keep the draft if the local connection is down. */ }
+  }
   async function publish(event) {
     event.preventDefault();
     if (!canPublish || submitLock.current) return;
-    submitLock.current = true;
-    setError('');
-    const name = title.trim();
-    const draftRequestId = requestId.current;
-    const totalBytes = photos.reduce((total, item) => total + item.file.size, 0);
-    let uploadedBytes = 0;
-    let submitted = false;
+    submitLock.current = true; setError('');
+    const name = title.trim(); const draftRequestId = requestId.current;
+    const additions = photos.filter((photo) => photo.file);
+    const totalBytes = additions.reduce((total, item) => total + item.file.size, 0);
+    let uploadedBytes = 0; let uploadedCount = 0;
     try {
       const uploaded = [];
       for (let index = 0; index < photos.length; index += 1) {
         const item = photos[index];
-        setStage({ phase: 'uploading', current: index, total: photos.length, bytes: uploadedBytes, totalBytes, detail: item.file.name });
+        const alt = item.alt.trim() || `${name}, photograph ${index + 1}`;
+        if (item.existingId) { uploaded.push({ existingId: item.existingId, alt }); continue; }
+        setStage({ phase: 'uploading', current: uploadedCount, total: additions.length, bytes: uploadedBytes, totalBytes });
         const dimensions = await photoDimensions(item.file);
-        submitted = true;
-        let uploadResponse;
-        try {
-          uploadResponse = await fetch(`/api/photos?requestId=${encodeURIComponent(draftRequestId)}&photoId=${encodeURIComponent(item.id)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': photoContentType(item.file), 'X-Canoe-Token': session.token },
-            body: item.file,
-          });
-        } catch {
-          throw new Error(`“${item.file.name}” could not finish uploading. Your originals and draft are still here; please try publishing again.`);
-        }
-        const upload = await readJson(uploadResponse);
-        if (!upload.uploadId) throw new Error(`“${item.file.name}” could not be confirmed by the studio. Please try publishing again.`);
-        uploaded.push({ uploadId: upload.uploadId, filename: item.file.name, alt: item.alt.trim() || `${name}, photograph ${index + 1}`, ...dimensions });
-        uploadedBytes += item.file.size;
-        setStage({ phase: 'uploading', current: index + 1, total: photos.length, bytes: uploadedBytes, totalBytes, detail: item.file.name });
+        const upload = await readJson(await fetch(`/api/photos?requestId=${encodeURIComponent(draftRequestId)}&photoId=${encodeURIComponent(item.id)}`, { method: 'POST', headers: { 'Content-Type': photoContentType(item.file), 'X-Canoe-Token': session.token }, body: item.file }));
+        if (!upload.uploadId) throw new Error(`“${item.filename}” could not be confirmed. Please try publishing again.`);
+        uploaded.push({ uploadId: upload.uploadId, filename: item.filename, alt, ...dimensions });
+        uploadedBytes += item.file.size; uploadedCount += 1;
+        setStage({ phase: 'uploading', current: uploadedCount, total: additions.length, bytes: uploadedBytes, totalBytes });
       }
-      setStage({ phase: 'publishing', total: photos.length, bytes: uploadedBytes });
-      let response;
-      try {
-        submitted = true;
-        response = await fetch('/api/sets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Canoe-Token': session.token },
-          body: JSON.stringify({ title: name, photos: uploaded, coverIndex: Math.max(0, photos.findIndex((photo) => photo.id === cover?.id)), requestId: draftRequestId }),
-        });
-      } catch {
-        throw new Error('The connection ended before publishing could be confirmed. Check your portfolio before retrying; the studio will reuse this draft’s publishing request.');
-      }
-      const result = await readJson(response);
+      setStage({ phase: 'publishing', bytes: uploadedBytes });
+      const result = await readJson(await fetch(editing ? `/api/sets/${encodeURIComponent(editing.id)}` : '/api/sets', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Canoe-Token': session.token },
+        body: JSON.stringify({ title: name, photos: uploaded, coverIndex: Math.max(0, photos.findIndex((photo) => photo.id === cover?.id)), coverCrop: crop, requestId: draftRequestId, ...(editing ? { baseRevision: editing.revision } : {}) }),
+      }));
       finishPublishing(result, name);
-    } catch (err) {
-      setError(err.message || 'The set could not be published. Your draft is still here; please try again.');
-      if (submitted) {
-        try {
-          const latest = await readJson(await fetch('/api/session', { cache: 'no-store' }));
-          setSession((current) => ({ ...current, pending: latest.pending || null }));
-        } catch { /* The draft remains available if the local connection is down. */ }
-      }
-    } finally {
-      setStage(null);
-      submitLock.current = false;
-    }
+    } catch (err) { setError(err.message || 'Publishing could not finish. Your draft is still here; please try again.'); await renewSession(); }
+    finally { setStage(null); submitLock.current = false; }
   }
+  const phaseLabel = stage?.phase === 'uploading' ? 'Uploading new originals' : stage?.phase === 'resuming' ? 'Resuming publishing' : stage?.phase === 'refreshing' ? 'Reloading sets' : editing ? 'Saving changes' : 'Publishing set';
 
   return <div className="studio-shell">
     <header className="studio-header">
@@ -244,38 +228,49 @@ export default function Studio() {
       <span className="studio-private"><LockKeyhole size={12} strokeWidth={1.5} /> Private on this Mac</span>
     </header>
     <main className="studio-main">
-      <div className="studio-intro"><a className="studio-portfolio-link" href="/"><ArrowLeft size={14} /> View portfolio</a><h1>Create a set</h1><p>Add photographs, choose a cover, then publish.</p></div>
-      {session?.pending && !success && <section className="studio-pending" aria-labelledby="studio-pending-title">
-        <div><h2 id="studio-pending-title">A previous set is waiting to publish</h2><p><strong>{session.pending.title}</strong>{session.pending.count ? ` · ${session.pending.count} ${session.pending.count === 1 ? 'photograph' : 'photographs'}` : ''}</p><p>Resume this saved set before publishing a new one.</p></div>
-        <button className="studio-primary" type="button" disabled={busy} onClick={resumePublishing}>{stage?.phase === 'resuming' ? <><LoaderCircle className="studio-spinner" size={15} /> Resuming publishing</> : <><Upload size={15} /> Resume publishing</>}</button>
-        {error && <div className="studio-error" role="alert">{error}</div>}
-      </section>}
+      <div className="studio-intro" ref={editor}>
+        <a className="studio-portfolio-link" href="/"><ArrowLeft size={14} /> View portfolio</a>
+        <div className="studio-editor-toolbar"><label className="studio-field"><span>Set to edit</span><select value={editing?.id || ''} disabled={locked || connection !== 'ready'} onChange={(event) => { const selected = existing.find((item) => item.id === event.target.value); if (selected) editSet(selected); else newDraft(); }}><option value="">Create a new set</option>{existing.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>{editing && <button className="studio-secondary" type="button" disabled={locked} onClick={newDraft}><Plus size={14} /> New set</button>}</div>
+        <h1>{editing ? 'Edit set' : 'Create a set'}</h1><p>{editing ? 'Add, remove, and reorder photographs. Frame your cover, then save your changes.' : 'Add photographs, choose a cover, then publish.'}</p>
+        {editing && <p className="studio-edit-status">{dirty && !success ? 'Unsaved changes' : 'Editing the published set'} · Your set’s link stays the same.</p>}
+      </div>
+      {session?.pending && !success && <section className="studio-pending" aria-labelledby="studio-pending-title"><div><h2 id="studio-pending-title">A previous publication is waiting</h2><p><strong>{session.pending.title}</strong> · {session.pending.count} photographs</p><p>Resume the saved publication before making more changes.</p></div><button className="studio-primary" type="button" disabled={busy} onClick={resumePublishing}><Upload size={15} /> {busy ? phaseLabel : 'Resume publishing'}</button>{error && <div className="studio-error" role="alert">{error}</div>}</section>}
       {connection === 'unavailable' ? <section className="studio-unavailable" role="alert"><LockKeyhole size={28} strokeWidth={1.2} /><h2>Open your private studio</h2><p>{connectionError}</p><button className="studio-secondary" type="button" onClick={() => window.location.reload()}>Try again</button></section> : success ? <section className="studio-success" aria-labelledby="studio-success-title">
-        <div className="studio-success-icon"><CheckCircle2 size={34} strokeWidth={1.2} /></div><p className="studio-eyebrow">Sent to GitHub</p><h2 id="studio-success-title">{success.title}</h2><p>Your set has been submitted. GitHub Pages is updating your portfolio; this can take a few minutes.</p>
-        <div className="studio-success-actions"><a className="studio-primary" href={success.url || `${publicUrl}#${success.collection?.id || ''}`} target="_blank" rel="noreferrer">View set <ArrowUpRight size={17} /></a><button className="studio-secondary" type="button" onClick={newDraft}><Plus size={16} /> Create another set</button></div>
+        <div className="studio-success-icon"><CheckCircle2 size={34} strokeWidth={1.2} /></div><p className="studio-eyebrow">{success.updated ? 'Changes sent to GitHub' : 'Sent to GitHub'}</p><h2 id="studio-success-title">{success.title}</h2><p>Your {success.updated ? 'changes have' : 'set has'} been submitted. GitHub Pages is updating your portfolio; this can take a few minutes.</p>
+        <div className="studio-success-actions"><a className="studio-primary" href={success.url} target="_blank" rel="noreferrer">View set <ArrowUpRight size={17} /></a><button className="studio-secondary" type="button" onClick={() => editSet(success.collection, success.revision)}><Pencil size={14} /> Edit this set</button><button className="studio-secondary" type="button" onClick={newDraft}><Plus size={16} /> New set</button></div>
       </section> : <form className="studio-editor" onSubmit={publish} aria-busy={busy}>
         <div className="studio-editor-main">
-          <label className="studio-field studio-set-name"><span>Set name</span><input value={title} onChange={(event) => { setTitle(event.target.value); requestId.current = makeRequestId(); }} disabled={busy} placeholder="A name for these photographs" maxLength={100} autoComplete="off" required /></label>
-          <div className={`studio-dropzone${dragging ? ' is-dragging' : ''}${busy ? ' is-disabled' : ''}`} onDragOver={(event) => { event.preventDefault(); if (!busy) setDragging(true); }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }} onDrop={(event) => { event.preventDefault(); addFiles(event.dataTransfer.files); }} role="group" aria-label="Upload photographs">
-            <input className="studio-file-input" ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif" multiple disabled={busy} tabIndex={-1} onChange={(event) => { addFiles(event.target.files); event.target.value = ''; }} aria-label="Choose photographs" />
-            <Upload size={28} strokeWidth={1.1} /><h2>Drop your photographs here</h2><p>JPG, PNG, WebP, or AVIF · up to 30 photos</p><button className="studio-secondary" type="button" disabled={busy} onClick={() => input.current?.click()}><ImagePlus size={16} /> Choose photographs</button>
+          <label className="studio-field studio-set-name"><span>Set name</span><input value={title} onChange={(event) => { setTitle(event.target.value); changed(); }} disabled={locked} placeholder="A name for these photographs" maxLength={100} autoComplete="off" required /></label>
+          <div className={`studio-dropzone${photos.length ? ' is-compact' : ''}${dragging ? ' is-dragging' : ''}${locked ? ' is-disabled' : ''}`} onDragOver={(event) => { if (!event.dataTransfer.types.includes('Files')) return; event.preventDefault(); if (!locked) setDragging(true); }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }} onDrop={(event) => { event.preventDefault(); addFiles(event.dataTransfer.files); }} role="group" aria-label="Upload photographs">
+            <input className="studio-file-input" ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif" multiple disabled={locked} tabIndex={-1} onChange={(event) => { addFiles(event.target.files); event.target.value = ''; }} aria-label="Choose photographs" />
+            <Upload size={28} strokeWidth={1.1} /><h2>{editing ? 'Add more photographs' : 'Drop your photographs here'}</h2><p>JPG, PNG, WebP, or AVIF · up to 30 photos per set</p><button className="studio-secondary" type="button" disabled={locked} onClick={() => input.current?.click()}><ImagePlus size={16} /> Choose photographs</button>
           </div>
           {error && !session?.pending && <div className="studio-error" role="alert">{error}</div>}
-          {photos.length > 0 && <><div className="studio-photo-list-heading"><h2>{photos.length} {photos.length === 1 ? 'photograph' : 'photographs'}</h2><p>Select a photograph to use as the set cover.</p></div><div className="studio-photo-grid">
-            {photos.map((photo, index) => <article className={`studio-photo-card${cover?.id === photo.id ? ' is-cover' : ''}`} key={photo.id}>
-              <div className="studio-photo-image"><label className="studio-cover-target" aria-label={`Use ${photo.file.name} as cover`}><input className="studio-cover-input" type="radio" name="studio-cover" checked={cover?.id === photo.id} disabled={busy} onChange={() => { setCoverId(photo.id); requestId.current = makeRequestId(); }} /><img src={photo.url} alt={`Preview of ${photo.file.name}`} loading="lazy" /><span className="studio-cover-label">{cover?.id === photo.id ? <><Check size={13} /> Cover</> : 'Use as cover'}</span></label><button className="studio-remove-photo" type="button" disabled={busy} onClick={() => removePhoto(photo.id)} aria-label={`Remove ${photo.file.name}`}><X size={15} /></button></div>
-              <div className="studio-photo-details"><p title={photo.file.name}><span>{String(index + 1).padStart(2, '0')}</span>{photo.file.name}</p><label className="studio-field studio-alt-field"><span>Image description <small>(optional)</small></span><input value={photo.alt} onChange={(event) => { setPhotos((current) => current.map((item) => item.id === photo.id ? { ...item, alt: event.target.value } : item)); requestId.current = makeRequestId(); }} disabled={busy} maxLength={300} placeholder="Describe what is in the photo" /></label></div>
+          {photos.length > 0 && <><div className="studio-photo-list-heading"><h2 aria-live="polite">{photos.length} {photos.length === 1 ? 'photograph' : 'photographs'}</h2><p>Drag the handles or use arrows to reorder. Select a photo for the cover.</p></div><div className="studio-photo-grid">
+            {photos.map((photo, index) => <article className={`studio-photo-card${cover?.id === photo.id ? ' is-cover' : ''}${dragPhotoId === photo.id ? ' is-reordering' : ''}`} key={photo.id} aria-label={`Photograph ${index + 1}: ${photo.filename}`}
+              onDragOver={(event) => { if (dragPhotoId && !locked) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; } }}
+              onDrop={(event) => { if (!dragPhotoId) return; event.preventDefault(); event.stopPropagation(); movePhoto(dragPhotoId, index); setDragPhotoId(null); }}>
+              <div className="studio-photo-image"><label className="studio-cover-target" aria-label={`Use ${photo.filename} as cover`}><input className="studio-cover-input" type="radio" name="studio-cover" checked={cover?.id === photo.id} disabled={locked} onChange={() => { setCoverId(photo.id); setCrop({ ...DEFAULT_CROP }); changed(); }} /><img src={photo.url} alt={`Preview of ${photo.filename}`} draggable={false} loading="lazy" onError={(event) => { if (photo.remoteUrl && event.currentTarget.src !== photo.remoteUrl) event.currentTarget.src = photo.remoteUrl; }} /><span className="studio-cover-label">{cover?.id === photo.id ? <><Check size={13} /> Cover</> : 'Use as cover'}</span></label><button className="studio-remove-photo" type="button" disabled={locked} onClick={() => removePhoto(photo.id)} aria-label={`Remove ${photo.filename}`}><X size={15} /></button></div>
+              <div className="studio-photo-details"><p title={photo.filename}><span>{String(index + 1).padStart(2, '0')}</span>{photo.filename}</p>
+                <div className="studio-order-controls"><button type="button" draggable={!locked} disabled={locked} aria-label={`Drag to reorder ${photo.filename}`} className="studio-drag-handle" onDragStart={(event) => { setDragPhotoId(photo.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('application/x-canoe-photo', photo.id); }} onDragEnd={() => setDragPhotoId(null)}><GripVertical size={15} /><span>Move</span></button><button type="button" disabled={locked || index === 0} onClick={() => movePhoto(photo.id, index - 1)} aria-label={`Move ${photo.filename} earlier`}><ArrowUp size={15} /></button><button type="button" disabled={locked || index === photos.length - 1} onClick={() => movePhoto(photo.id, index + 1)} aria-label={`Move ${photo.filename} later`}><ArrowDown size={15} /></button></div>
+                <label className="studio-field studio-alt-field"><span>Image description <small>(optional)</small></span><input value={photo.alt} onChange={(event) => { setPhotos((current) => current.map((item) => item.id === photo.id ? { ...item, alt: event.target.value } : item)); changed(); }} disabled={locked} maxLength={300} placeholder="Describe what is in the photo" /></label>
+              </div>
             </article>)}
           </div></>}
+          {editing && !photos.length && <p className="studio-empty-edit" role="status">Add at least one photograph before saving this set.</p>}
         </div>
         <aside className="studio-publish-panel" aria-label="Set preview and publishing">
-          <p className="studio-eyebrow">Your set</p><div className={`studio-cover-preview${cover ? '' : ' is-empty'}`}>{cover ? <img src={cover.url} alt="Selected set cover" /> : <Aperture size={36} strokeWidth={0.8} />}</div><h2 className={title.trim() ? '' : 'is-placeholder'}>{title.trim() || 'Untitled set'}</h2><p className="studio-publish-count">{photos.length ? `${photos.length} ${photos.length === 1 ? 'photograph' : 'photographs'}` : 'No photographs yet'}</p>
-          <p className="studio-publish-note">Originals stay unchanged. Lighter display copies keep your portfolio fast.</p>
-          <button className="studio-primary studio-publish-button" type="submit" disabled={!canPublish}>{busy ? <><LoaderCircle className="studio-spinner" size={16} /> {stage.phase === 'uploading' ? 'Uploading originals' : stage.phase === 'resuming' ? 'Resuming publishing' : 'Publishing set'}</> : <><Upload size={16} /> Publish set</>}</button>
-          <div className="studio-progress" role="status" aria-live="polite">{connection === 'loading' ? <p><LoaderCircle className="studio-spinner" size={12} /> Connecting to your studio…</p> : stage?.phase === 'uploading' ? <><progress value={stage.bytes} max={stage.totalBytes || 1} aria-label="Uploading original photographs" /><p>{stage.current} of {stage.total} uploaded · {mb(stage.bytes)} of {mb(stage.totalBytes)}</p></> : stage?.phase === 'publishing' ? <><progress aria-label="Publishing original photographs" /><p>Sending {mb(stage.bytes)} of original photographs to GitHub. Keep this window open.</p></> : stage?.phase === 'resuming' ? <><progress aria-label="Resuming publishing" /><p>Sending your saved set to GitHub. Keep this window open.</p></> : session?.pending ? <p>Resume the saved set above before publishing a new one.</p> : <p>Publishes to your existing portfolio.</p>}</div>
+          <p className="studio-eyebrow">Your cover</p>{cover ? <CoverCrop key={cover.id} photo={cover} crop={crop} onChange={changeCrop} disabled={locked} /> : <div className="studio-cover-preview is-empty"><Aperture size={36} strokeWidth={0.8} /></div>}
+          <h2 className={title.trim() ? '' : 'is-placeholder'}>{title.trim() || 'Untitled set'}</h2><p className="studio-publish-count">{photos.length ? `${photos.length} ${photos.length === 1 ? 'photograph' : 'photographs'}` : 'No photographs yet'}</p>
+          <p className="studio-publish-note">Originals stay unchanged. The crop applies only to the set cover.</p>
+          <button className="studio-primary studio-publish-button" type="submit" disabled={!canPublish}>{busy ? <><LoaderCircle className="studio-spinner" size={16} /> {phaseLabel}</> : <><Upload size={16} /> {editing ? 'Save changes' : 'Publish set'}</>}</button>
+          <div className="studio-progress" role="status" aria-live="polite">{connection === 'loading' ? <p>Connecting to your studio…</p> : stage?.phase === 'uploading' ? <><progress value={stage.bytes} max={stage.totalBytes || 1} aria-label="Uploading new original photographs" /><p>{stage.current} of {stage.total} new photos uploaded · {mb(stage.bytes)} of {mb(stage.totalBytes)}</p></> : stage?.phase === 'publishing' ? <><progress aria-label="Publishing set" /><p>{editing ? 'Updating this set on GitHub.' : 'Sending this set to GitHub.'} Keep this window open.</p></> : busy ? <p>{phaseLabel}…</p> : session?.pending ? <p>Resume the saved publication above first.</p> : <p>{editing && !dirty ? 'Make a change to save this set.' : 'Publishes to your existing portfolio.'}</p>}</div>
         </aside>
       </form>}
-      {existing.length > 0 && <section className="studio-existing" aria-labelledby="studio-existing-title"><div className="studio-section-heading"><h2 id="studio-existing-title">Published sets</h2><span>{existing.length} sets</span></div><div className="studio-existing-grid">{existing.map((collection) => <a key={collection.id} href={`${publicUrl}#${collection.id}`} target="_blank" rel="noreferrer"><span>{collection.title}</span><ArrowUpRight size={15} strokeWidth={1.25} /></a>)}</div></section>}
+      {existing.length > 0 && <section className="studio-existing" aria-labelledby="studio-existing-title"><div className="studio-section-heading"><h2 id="studio-existing-title">Published sets</h2><button className="studio-reload" type="button" disabled={locked || connection !== 'ready'} onClick={refreshSets}><RefreshCw size={12} className={stage?.phase === 'refreshing' ? 'studio-spinner' : ''} /> Reload sets</button></div><div className="studio-existing-grid">{existing.map((collection) => <article className={`studio-existing-set${editing?.id === collection.id ? ' is-editing' : ''}`} key={collection.id}>
+        <img src={localAsset(collection.cover)} alt="" loading="lazy" onError={(event) => { const remote = `${publicUrl}${collection.cover}`; if (event.currentTarget.src !== remote) event.currentTarget.src = remote; }} />
+        <div><h3>{collection.title}</h3><p>{collection.photos.length} photographs</p><div className="studio-existing-actions"><button type="button" disabled={locked || connection !== 'ready'} onClick={() => editSet(collection)} aria-label={`Edit ${collection.title}`}><Pencil size={12} /> Edit set</button><a href={`${publicUrl}#${collection.id}`} target="_blank" rel="noreferrer" aria-label={`View ${collection.title}`}><ArrowUpRight size={15} /></a></div></div>
+      </article>)}</div></section>}
     </main>
     <footer className="studio-footer">Canoe Studio <span>Only available on this Mac</span></footer>
   </div>;

@@ -172,3 +172,169 @@ test('preview generation failure never commits a set or falls back to the full o
   const staged = path.join(f.root, '.canoe-studio/uploads/test-upload-request-0001', `${photoId}.original`);
   assert.ok((await fs.readFile(staged)).equals(truncated));
 });
+
+async function createEditableSet(f, requestId = 'edit-seed-request-0001') {
+  const entries = [];
+  for (let index = 0; index < 3; index++) {
+    const id = `seed-photo-upload-000${index}`;
+    assert.equal((await f.upload(requestId, original, 'image/jpeg', {}, id)).status, 201);
+    entries.push({ uploadId: id, filename: `photo-${index + 1}.jpg`, alt: `Original description ${index + 1}`, width: 2, height: 3 });
+  }
+  const response = await f.send('/api/sets', { requestId, title: 'Editable set', photos: entries, coverIndex: 0 });
+  assert.equal(response.status, 201, JSON.stringify(await response.clone().json()));
+  return response.json();
+}
+
+const editPayload = (created, requestId = 'edit-set-request-0001') => ({
+  requestId, title: created.collection.title, baseRevision: created.revision,
+  photos: created.collection.photos.map((photo) => ({ existingId: photo.id, alt: photo.alt })),
+  coverIndex: 0, coverCrop: { x: 0.5, y: 0.5, zoom: 1 },
+});
+
+test('editing adds, removes, and reorders photographs in place, changes the cover crop, and retries safely', async (t) => {
+  const f = await fixture(t);
+  const created = await createEditableSet(f);
+  const before = created.collection;
+  const data = await (await fetch(`${f.origin}/api/gallery`)).json();
+  assert.equal(data.revisions[before.id], created.revision);
+  const additionId = 'new-photo-upload-0001';
+  const update = editPayload(created);
+  assert.equal((await f.upload(update.requestId, original, 'image/jpeg', {}, additionId)).status, 201);
+  update.title = 'Edited name';
+  update.photos = [update.photos[2], update.photos[0], { uploadId: additionId, filename: 'added.jpg', alt: 'Added original', width: 2, height: 3 }];
+  update.coverCrop = { x: 0.2, y: 0.8, zoom: 1.5 };
+  const endpoint = `/api/sets/${before.id}`;
+  const response = await f.send(endpoint, update);
+  assert.equal(response.status, 201, JSON.stringify(await response.clone().json()));
+  const saved = await response.json(); const after = saved.collection;
+  assert.equal(after.id, before.id); assert.equal(saved.url, created.url); assert.equal(after.title, 'Edited name');
+  assert.equal(after.count, 3); assert.equal(new Set(after.photos.map((photo) => photo.id)).size, 3);
+  assert.deepEqual(after.photos.slice(0, 2).map((photo) => photo.id), [before.photos[2].id, before.photos[0].id]);
+  assert.ok(!after.photos.some((photo) => photo.id === before.photos[1].id));
+  assert.equal(after.photos[2].filename, 'added.jpg');
+  assert.equal(after.coverPhoto.id, before.photos[2].id);
+  assert.deepEqual(after.coverCrop, update.coverCrop);
+  assert.notEqual(after.cover, before.cover); assert.notEqual(saved.revision, created.revision);
+  assert.equal(after.photos[0].fullSrc, before.photos[2].fullSrc);
+  assert.deepEqual(after.photos[0].variants, before.photos[2].variants);
+  const remoteFile = (name) => run('git', ['--git-dir', f.remote, 'show', `main:${name}`], { encoding: 'buffer' });
+  for (const photo of [...before.photos, after.photos[2]]) {
+    assert.ok((await remoteFile(`photography/${photo.fullSrc}`)).stdout.equals(original), 'retained, removed, and added originals remain byte-for-byte intact');
+  }
+  const latest = JSON.parse((await remoteFile('photography/gallery.json')).stdout);
+  assert.deepEqual(latest.collections.map((collection) => collection.id), ['existing', before.id]);
+  assert.deepEqual(JSON.parse((await remoteFile('_photography-source/public/gallery.json')).stdout), latest);
+  assert.equal((await remoteFile('index.html')).stdout.toString(), 'PERSONAL WEBSITE UNCHANGED');
+  const retried = await f.send(endpoint, update); assert.equal(retried.status, 201); assert.equal((await retried.json()).commit, saved.commit);
+  const alteredRetry = { ...update, coverCrop: { x: 0.8, y: 0.8, zoom: 1.5 } };
+  assert.equal((await f.send(endpoint, alteredRetry)).status, 409);
+  // A reorder with the same cover and crop only changes the gallery metadata.
+  const reordered = editPayload(saved, 'edit-set-request-0002');
+  reordered.photos = [reordered.photos[1], reordered.photos[0], reordered.photos[2]];
+  reordered.coverIndex = 1; reordered.coverCrop = after.coverCrop;
+  const orderResponse = await f.send(endpoint, reordered);
+  assert.equal(orderResponse.status, 201, JSON.stringify(await orderResponse.clone().json()));
+  const orderSaved = await orderResponse.json();
+  assert.equal(orderSaved.collection.cover, after.cover);
+  const paths = (await run('git', ['--git-dir', f.remote, 'diff-tree', '--no-commit-id', '--name-only', '-r', orderSaved.commit])).stdout.trim().split('\n');
+  assert.deepEqual(paths.sort(), ['_photography-source/public/gallery.json', 'photography/gallery.json']);
+});
+
+test('editing rejects stale revisions, invalid crops, duplicate references, and foreign photos without changing published files', async (t) => {
+  const f = await fixture(t); const created = await createEditableSet(f);
+  const endpoint = `/api/sets/${created.collection.id}`;
+  const before = (await run('git', ['--git-dir', f.remote, 'rev-parse', 'main'])).stdout.trim();
+  assert.equal((await f.send(endpoint, editPayload(created), { 'X-Canoe-Token': 'a'.repeat(64) })).status, 403);
+  assert.equal((await f.send(endpoint, { ...editPayload(created), photos: [] })).status, 400);
+  assert.equal((await f.send(endpoint, { ...editPayload(created), photos: [{existingId:'../../another-set'}] })).status, 400);
+  const duplicate = editPayload(created); duplicate.photos = [duplicate.photos[0], duplicate.photos[0]];
+  assert.equal((await f.send(endpoint, duplicate)).status, 400);
+  assert.equal((await f.send(endpoint, { ...editPayload(created), coverCrop: {x:0.5,y:2,zoom:1} })).status, 400);
+  assert.equal((await f.send(endpoint, { ...editPayload(created), baseRevision: 'f'.repeat(64) })).status, 409);
+  assert.equal((await run('git', ['--git-dir', f.remote, 'rev-parse', 'main'])).stdout.trim(), before);
+  // An edit from elsewhere must be preserved, while the studio can fetch fresh metadata.
+  await f.git(['pull', '--ff-only', 'origin', 'main']);
+  const file = path.join(f.seed, 'photography/gallery.json');
+  const external = JSON.parse(await fs.readFile(file, 'utf8')); external.collections[1].title = 'Changed elsewhere';
+  await fs.writeFile(file, JSON.stringify(external)); await f.git(['add','photography/gallery.json']); await f.git(['commit','-m','Concurrent edit']); await f.git(['push','origin','main']);
+  const stale = await f.send(endpoint, editPayload(created)); assert.equal(stale.status, 409); assert.match((await stale.json()).error, /changed since/);
+  const refreshed = await (await fetch(`${f.origin}/api/gallery?refresh=1`, { headers: {'X-Canoe-Token':f.session.token} })).json();
+  assert.equal(refreshed.collections[1].title, 'Changed elsewhere');
+  assert.notEqual(refreshed.revisions[created.collection.id], created.revision);
+  assert.equal((await (await fetch(`${f.origin}/api/session`)).json()).pending, null);
+});
+
+test('a failed edit resumes without adding a second set or losing the existing photo order', async (t) => {
+  const f = await fixture(t); const created = await createEditableSet(f);
+  const hook = path.join(f.remote, 'hooks', 'pre-receive');
+  await fs.writeFile(hook, '#!/bin/sh\nexit 1\n', {mode:0o755});
+  const update = editPayload(created); update.photos.reverse(); update.coverIndex = 2;
+  assert.equal((await f.send(`/api/sets/${created.collection.id}`, update)).status, 502);
+  const pending = JSON.parse(await fs.readFile(path.join(f.root,'.canoe-studio/pending.json'),'utf8'));
+  assert.equal(pending.operation, 'edit');
+  await fs.rm(hook);
+  const resumed = await f.send('/api/retry', {});
+  assert.equal(resumed.status, 201, JSON.stringify(await resumed.clone().json()));
+  const saved = await resumed.json(); assert.equal(saved.collection.id, created.collection.id);
+  assert.deepEqual(saved.collection.photos.map((photo) => photo.id), created.collection.photos.map((photo) => photo.id).reverse());
+  assert.equal((await (await fetch(`${f.origin}/api/gallery`)).json()).collections.length, 2);
+  assert.equal((await (await fetch(`${f.origin}/api/session`)).json()).pending, null);
+});
+
+test('cover framing selects the requested region, respects zoom, and never modifies the original', async (t) => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'canoe-cover-test-'));
+  t.after(() => fs.rm(directory, {recursive:true,force:true}));
+  const source = path.join(directory,'original.png'); const output = path.join(directory,'covers');
+  await run(process.env.PYTHON || 'python3', ['-c', "from PIL import Image;import sys;im=Image.new('RGB',(900,900),'red');im.paste('blue',(0,450,900,900));im.save(sys.argv[1])",source]);
+  const before = await fs.readFile(source);
+  const helper = path.resolve('scripts/create-cover-previews.py');
+  async function render(crop) {
+    const {stdout} = await run(process.env.PYTHON || 'python3', [helper, source, output, JSON.stringify(crop)]);
+    const result = JSON.parse(stdout); const variant = result.variants.at(-1);
+    const {stdout: pixel} = await run(process.env.PYTHON || 'python3', ['-c', "from PIL import Image;import sys,json;im=Image.open(sys.argv[1]);print(json.dumps(im.getpixel((im.width//2,im.height//2))))",path.join(output,variant.file)]);
+    return {variant,pixel:JSON.parse(pixel)};
+  }
+  const top = await render({x:0.5,y:0,zoom:2}); assert.equal(top.variant.width,450); assert.equal(top.variant.height,300); assert.ok(top.pixel[0]>240 && top.pixel[2]<15);
+  const bottom = await render({x:0.5,y:1,zoom:2}); assert.ok(bottom.pixel[2]>240 && bottom.pixel[0]<15, 'changing the crop must invalidate the cached cover');
+  assert.ok((await fs.readFile(source)).equals(before));
+  await assert.rejects(run(process.env.PYTHON || 'python3',[helper,source,output,JSON.stringify({x:0,y:0,zoom:0})]));
+});
+
+test('an existing legacy photograph with a URL-encoded folder can be reframed without altering it', async (t) => {
+  const f = await fixture(t); const created = await createEditableSet(f);
+  await f.git(['pull','--ff-only','origin','main']);
+  const galleryFile = path.join(f.seed,'photography/gallery.json');
+  const gallery = JSON.parse(await fs.readFile(galleryFile,'utf8'));
+  const collection = gallery.collections[1]; const photo = collection.photos[1];
+  const legacy = path.join(f.seed,'photography/photos/Legacy Folder/original.jpg');
+  await fs.mkdir(path.dirname(legacy),{recursive:true}); await fs.writeFile(legacy,original);
+  photo.fullSrc = 'photos/Legacy%20Folder/original.jpg';
+  await fs.writeFile(galleryFile,JSON.stringify(gallery));
+  await f.git(['add','photography']); await f.git(['commit','-m','Legacy photograph path']); await f.git(['push','origin','main']);
+  const refreshed = await (await fetch(`${f.origin}/api/gallery?refresh=1`,{headers:{'X-Canoe-Token':f.session.token}})).json();
+  const update = editPayload({collection:refreshed.collections[1],revision:refreshed.revisions[collection.id]}); update.coverIndex=1; update.coverCrop={x:0.5,y:0,zoom:1};
+  const response = await f.send(`/api/sets/${collection.id}`,update);
+  assert.equal(response.status,201,JSON.stringify(await response.clone().json()));
+  const saved = await response.json(); assert.equal(saved.collection.coverPhoto.id,photo.id);
+  assert.equal(saved.collection.photos[1].fullSrc,photo.fullSrc);
+  const remote = await run('git',['--git-dir',f.remote,'show','main:photography/photos/Legacy Folder/original.jpg'],{encoding:'buffer'});
+  assert.ok(remote.stdout.equals(original));
+});
+
+test('a conflicting edit while a publication is pending leaves the newer set intact and releases the pending draft', async (t) => {
+  const f = await fixture(t); const created = await createEditableSet(f);
+  const hook = path.join(f.remote,'hooks/pre-receive'); await fs.writeFile(hook,'#!/bin/sh\nexit 1\n',{mode:0o755});
+  const update=editPayload(created); update.title='Pending title';
+  assert.equal((await f.send(`/api/sets/${created.collection.id}`,update)).status,502);
+  await fs.rm(hook);
+  await f.git(['pull','--ff-only','origin','main']);
+  const file=path.join(f.seed,'photography/gallery.json'); const external=JSON.parse(await fs.readFile(file,'utf8')); external.collections[1].title='Newer external title';
+  await fs.writeFile(file,JSON.stringify(external)); await f.git(['add','photography/gallery.json']); await f.git(['commit','-m','Newer set edit']); await f.git(['push','origin','main']);
+  const retry=await f.send('/api/retry',{}); assert.equal(retry.status,409); assert.match((await retry.json()).error,/changed since/);
+  assert.equal((await (await fetch(`${f.origin}/api/session`)).json()).pending,null);
+  const latest=JSON.parse((await run('git',['--git-dir',f.remote,'show','main:photography/gallery.json'])).stdout);
+  assert.equal(latest.collections[1].title,'Newer external title');
+  const refreshed=await (await fetch(`${f.origin}/api/gallery?refresh=1`,{headers:{'X-Canoe-Token':f.session.token}})).json();
+  const next=editPayload({collection:refreshed.collections[1],revision:refreshed.revisions[created.collection.id]},'next-edit-request-0002'); next.title='Reviewed latest set';
+  const saved=await f.send(`/api/sets/${created.collection.id}`,next); assert.equal(saved.status,201,JSON.stringify(await saved.clone().json()));
+});

@@ -14,6 +14,8 @@ Double-click **Open Canoe Studio.command** in this folder. The private studio op
 
 Original files are uploaded unchanged, at full resolution. The studio creates high-quality WebP gallery previews and separate lightweight cover copies. Clicking a photograph to magnify it loads its original file. It uploads files individually, then publishes the complete set in one commit. JPEG, PNG, WebP, and AVIF files up to 50 MiB each are supported, with up to 30 photos per set. The public page scales images only for display.
 
+To edit a published set, choose it in **Set to edit** or click **Edit set** under Published sets. Add files, remove photos with the × button, and reorder them with the drag handles or earlier/later arrows. Select a cover photo, then drag its preview or use the position and zoom sliders to frame it. **Save changes** updates the existing set at the same link. Cover crops are separate WebP files; gallery photographs and original files stay uncropped. Removed photos leave the set, while original files remain preserved. A stale edit is rejected so a newer published version cannot be overwritten. Use **Reload sets** and reopen the set to review the latest version.
+
 The studio uses this Mac's existing GitHub sign-in. A saved, interrupted publication can be resumed. GitHub Pages can take a few minutes to deploy a submitted set. Keep the studio's Terminal window open while using it; the public portfolio stays online when the studio closes.
 
 The studio binds only to this Mac. It does not expose a public upload endpoint, store a GitHub token in the webpage, or modify source photographs. Its managed checkout and resumable uploads remain under ignored `.canoe-studio/`.
@@ -37,7 +39,7 @@ npm run test:studio
 npm run test:loading
 ```
 
-The studio's isolated tests cover original byte preservation, image signatures, local request protections, repository publishing, idempotent retries, failed-push recovery, and preservation of the personal homepage. Gallery browser checks cover portrait sizing, mixed proportions, and desktop/mobile layouts.
+The studio's isolated tests cover original byte preservation, image signatures, local request protections, creating and editing sets, image order and removal, cover crop pixels and zoom, legacy photograph paths, stale-edit protection, idempotent retries, failed-push recovery, and preservation of the personal homepage. Gallery browser checks cover portrait sizing, mixed proportions, and desktop/mobile layouts.
 
 The public photo elements suppress ordinary right-click menus, copy/cut, drag saving, selection, and supported touch callouts. These are interaction deterrents; public images can still be accessed through browser tools or captured in screenshots.
 
