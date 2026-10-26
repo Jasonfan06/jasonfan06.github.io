@@ -13,7 +13,7 @@ function Photo({ photo, loader, canLoad, prepared = false, cover = false, eager 
   const image = useRef(null);
   const [nearViewport, setNearViewport] = useState(false);
   const [loadedSource, setLoadedSource] = useState(null);
-  const warmed = !canLoad && prepared && loader.isPreviewReady(photo);
+  const warmed = !canLoad && prepared && loader.isPreviewReady(photo, { cover });
   const active = (canLoad && (cover || eager || nearViewport)) || warmed;
   const source = loader.getPreviewSrc(photo, { cover });
 
@@ -51,6 +51,8 @@ export default function App({ collections = defaultCollections }) {
   const [apertureDone, setApertureDone] = useState(false);
   const [entryPrepared, setEntryPrepared] = useState(() => new Set());
   const [apertureReady, setApertureReady] = useState(false);
+  const [entryError, setEntryError] = useState(false);
+  const [entryAttempt, setEntryAttempt] = useState(0);
   const loader = useMemo(() => {
     const coordinator = createLoadingCoordinator(collections, { asset });
     const initialCollection = collectionFromHash()?.id ?? null;
@@ -67,21 +69,32 @@ export default function App({ collections = defaultCollections }) {
   const navigating = useRef(false);
 
   useEffect(() => {
+    if (apertureDone) return undefined;
     let obsolete = false;
     let frame;
+    setApertureReady(false);
+    setEntryError(false);
     const candidates = [...document.querySelectorAll('.cover-image img, .gallery-photo img')]
       .map((image) => ({ id: image.dataset.photoId, rect: image.getBoundingClientRect() }));
     const visible = candidates.filter(({ rect }) => rect.bottom > 0 && rect.top < window.innerHeight + 100)
       .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left);
-    const photoIds = (visible.length ? visible : candidates).slice(0, 4).map(({ id }) => id);
-    loader.prepareEntry({ photoIds, cover: !collection, budgetMs: 320 }).catch(() => ({ readyPhotoIds: [] })).then((result) => {
-      if (obsolete) return;
+    const photoIds = (visible.length ? visible : candidates.slice(0, 2)).map(({ id }) => id);
+    loader.prepareEntry({ photoIds, cover: !collection, requireReady: true }).then((result) => {
+      if (obsolete || result.canceled) return;
+      if (photoIds.some((id) => !result.readyPhotoIds.includes(id))) { setEntryError(true); return; }
       setEntryPrepared(new Set(result.readyPhotoIds));
       // Let already-decoded previews mount behind the closed iris before it moves.
       frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => { if (!obsolete) setApertureReady(true); }); });
-    });
+    }).catch(() => { if (!obsolete) setEntryError(true); });
     return () => { obsolete = true; cancelAnimationFrame(frame); };
-  }, [loader]);
+  }, [loader, entryAttempt, collection, apertureDone]);
+
+  useEffect(() => {
+    if (apertureReady || apertureDone) return undefined;
+    const resize = () => setEntryAttempt((attempt) => attempt + 1);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [apertureReady, apertureDone]);
 
   useEffect(() => {
     const sync = () => {
@@ -134,7 +147,7 @@ export default function App({ collections = defaultCollections }) {
   const nextCollection = collection ? collections[(collections.indexOf(collection) + 1) % collections.length] : null;
 
   return <>
-    <Aperture brand="Canoe" ready={apertureReady} onStart={apertureStarted} onComplete={apertureFinished} />
+    <Aperture brand="Canoe" ready={apertureReady} error={entryError} onRetry={() => setEntryAttempt((attempt) => attempt + 1)} onStart={apertureStarted} onComplete={apertureFinished} />
     <a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to photographs</a>
     <header className="site-header page-width" inert={!apertureDone}>
       <a className="brand" href={base} onClick={home} aria-label="Canoe photography home">

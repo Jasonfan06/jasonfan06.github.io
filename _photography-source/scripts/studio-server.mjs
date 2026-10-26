@@ -14,6 +14,7 @@ const runFile = promisify(execFile);
 const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(SCRIPT_DIRECTORY, '..');
 const PREVIEW_SCRIPT = path.join(SCRIPT_DIRECTORY, 'create-photo-previews.py');
+const COVER_SCRIPT = path.join(SCRIPT_DIRECTORY, 'create-cover-previews.py');
 const REMOTE = 'https://github.com/Jasonfan06/jasonfan06.github.io.git';
 const PUBLIC_URL = 'https://jasonfan06.github.io/photography/';
 const MAX_BODY = 2 * 1024 * 1024;
@@ -392,10 +393,43 @@ export function createStudioServer(options = {}) {
       variants.sort((first, second) => first.width - second.width);
       const display = variants.find((variant) => variant.width >= 1200) || variants.at(-1);
       photos.push({ id: `${id}-${index+1}`, title: path.parse(input.filename).name || `Photograph ${index+1}`, alt: input.alt, filename: input.filename, uploadId: input.uploadId, src: display.src, fullSrc, srcSet: variants.map((variant) => `${variant.src} ${variant.width}w`).join(', '), variants, width: input.width, height: input.height, original: true, byteSize: input.byteSize, sha256: input.sha256, previewVersion: 1 });
-
+      if (index === upload.coverIndex) {
+        const coverDirectory = path.join(pendingFiles, `.covers-${photoId}`);
+        const coverVariants = [];
+        try {
+          let cover;
+          try {
+            const { stdout } = await runFile(process.env.PYTHON || 'python3', [COVER_SCRIPT, stagedOriginal, coverDirectory], { encoding: 'utf8', timeout: 120000, maxBuffer: 1024 * 1024 });
+            cover = JSON.parse(stdout);
+          } catch (error) {
+            console.error('Canoe Studio could not create cover copies:', String(error.stderr || error.message).trim().slice(0, 1000));
+            throw new ApiError(500, 'Cover copies could not be prepared. Your originals are saved unchanged; click Publish to retry.');
+          }
+          const maximum = Math.max(1, Math.min(input.width, Math.floor(input.height * 1.5)));
+          const widths = [...new Set([480, 800, 1200].map((width) => Math.min(width, maximum)))];
+          if (cover.width !== input.width || cover.height !== input.height || !Array.isArray(cover.variants) || cover.variants.length !== widths.length) throw new ApiError(500, 'Cover copies did not match the photograph. Your originals are unchanged.');
+          const seen = new Set();
+          for (const variant of cover.variants) {
+            if (!widths.includes(variant.width) || seen.has(variant.width) || variant.file !== `${variant.width}.webp` || variant.height !== Math.max(1, Math.round(variant.width / 1.5))) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
+            seen.add(variant.width);
+            const source = path.join(coverDirectory, variant.file);
+            const bytes = await fs.readFile(source);
+            const dimensions = webpDimensions(bytes);
+            if (dimensions.width !== variant.width || dimensions.height !== variant.height || bytes.length !== variant.byteSize) throw new ApiError(500, 'Cover copies could not be verified. Your originals are unchanged.');
+            const src = `optimized/${id}/${photoId}/cover/${variant.width}.webp`;
+            const stagedCover = `${photoId}-0-${variant.width}.webp`;
+            await fs.rename(source, path.join(pendingFiles, stagedCover));
+            files.push({ src, staged: stagedCover });
+            coverVariants.push({ src, width: variant.width, height: variant.height, byteSize: variant.byteSize });
+          }
+        } finally { await fs.rm(coverDirectory, { recursive: true, force: true }); }
+        coverVariants.sort((first, second) => first.width - second.width);
+        const coverDisplay = coverVariants.find((variant) => variant.width >= 800) || coverVariants.at(-1);
+        Object.assign(photos.at(-1), { coverSrc: coverDisplay.src, coverVariants });
+      }
     }
     const coverPhoto = photos[upload.coverIndex];
-    const collection = { id, title: upload.title, folder: upload.title, cover: coverPhoto.src, coverPhoto, count: photos.length, photos, uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint };
+    const collection = { id, title: upload.title, folder: upload.title, cover: coverPhoto.coverSrc, coverPhoto, count: photos.length, photos, uploadRequestId: upload.requestId, uploadFingerprint: upload.fingerprint };
     const baseSha = (await git(['rev-parse', 'origin/main'])).stdout.trim();
     const transaction = { requestId: upload.requestId, fingerprint: upload.fingerprint, baseSha, collection, files };
     await atomicJson(pendingFile, transaction);
@@ -467,7 +501,7 @@ export function createStudioServer(options = {}) {
     const existing = gallery.collections.find((collection) => collection.uploadRequestId === upload.requestId);
     if (existing) {
       if (existing.uploadFingerprint && existing.uploadFingerprint !== upload.fingerprint) throw new ApiError(409, 'This draft changed after publishing. Start a new set to publish different photographs.');
-      const files = [...new Set(existing.photos.flatMap((photo) => [photo.src, photo.fullSrc, ...(photo.variants?.map((variant) => variant.src) || [])]).filter(Boolean))].map((src) => ({ src, staged: '' }));
+      const files = [...new Set(existing.photos.flatMap((photo) => [photo.src, photo.fullSrc, photo.coverSrc, ...(photo.variants?.map((variant) => variant.src) || []), ...(photo.coverVariants?.map((variant) => variant.src) || [])]).filter(Boolean))].map((src) => ({ src, staged: '' }));
       await syncLocal({ files }, gallery);
       return { collection: existing, url: `${publicUrl}#${encodeURIComponent(existing.id)}`, commit: (await git(['rev-parse', 'origin/main'])).stdout.trim() };
     }

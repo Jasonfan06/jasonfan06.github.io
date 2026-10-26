@@ -48,6 +48,5 @@
   to { visibility: hidden; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aperture-intro { display: none; }
-}
+.aperture-intro__retry { text-align: center; font-size: 12px; line-height: 1.5; }
+.aperture-intro__retry button { pointer-events: auto; padding: 8px 20px; border: 1px solid #777; border-radius: 3px; color: inherit; background: transparent; }

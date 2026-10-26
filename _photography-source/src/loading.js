@@ -50,7 +50,7 @@ export function createLoadingCoordinator(collections, options = {}) {
   };
   const hidden = () => Boolean(page?.hidden);
   const isSaveData = () => Boolean(env.navigator?.connection?.saveData);
-  const variantChoices = (photo) => (photo.variants || []).filter((variant) => variant?.src && variant.width > 0).map((variant) => ({ ...variant, url: absolute(variant.src) })).sort((a, b) => a.width - b.width);
+  const variantChoices = (photo, cover = false) => ((cover && photo.coverVariants?.length ? photo.coverVariants : photo.variants) || []).filter((variant) => variant?.src && variant.width > 0).map((variant) => ({ ...variant, url: absolute(variant.src) })).sort((a, b) => a.width - b.width);
 
   function displayWidth(photo, cover) {
     const { width, height, dpr } = viewport();
@@ -69,10 +69,10 @@ export function createLoadingCoordinator(collections, options = {}) {
     const view = viewport();
     const key = `${photo.id}:${cover ? 'cover' : 'gallery'}:${view.width}:${view.height}:${view.dpr}`;
     if (pinnedPreviews.has(key)) return pinnedPreviews.get(key);
-    const variants = variantChoices(photo);
+    const variants = variantChoices(photo, cover);
     const needed = displayWidth(photo, cover);
     const chosen = variants.find((variant) => variant.width >= needed) || variants.at(-1);
-    // A larger, already-loaded cover is a free gallery preview rather than another download.
+    // Reuse a cached uncropped preview; cropped cover copies are never used in galleries.
     const cached = !cover && variants.find((variant) => variant.width >= needed && previewReady.has(variant.url));
     const url = cached?.url || chosen?.url || (/\.(?:webp|avif)(?:[?#]|$)/i.test(photo.src || '') && photo.src !== photo.fullSrc ? absolute(photo.src) : undefined);
     pinnedPreviews.set(key, url);
@@ -220,7 +220,7 @@ export function createLoadingCoordinator(collections, options = {}) {
     });
   }
 
-  function prepareEntry({ photoIds = [], cover = false, budgetMs = 320 } = {}) {
+  function prepareEntry({ photoIds = [], cover = false, budgetMs = 320, requireReady = false } = {}) {
     cancelPreflight();
     entryAnimationAllowed = false;
     stopEntryBytes();
@@ -228,7 +228,7 @@ export function createLoadingCoordinator(collections, options = {}) {
     cancelForeground();
     animating = true;
     const seen = new Set();
-    entryPlan = photoIds.slice(0, 4).map((id) => photosById.get(id)).filter(Boolean)
+    entryPlan = (requireReady ? photoIds : photoIds.slice(0, 4)).map((id) => photosById.get(id)).filter(Boolean)
       .map((photo) => ({ photo, url: getPreviewSrc(photo, { cover }) }))
       .filter((job) => job.url && !seen.has(job.url) && seen.add(job.url));
     if (destroyed) return Promise.resolve({ readyPhotoIds: [], readyUrls: [], timedOut: false, canceled: true });
@@ -246,24 +246,40 @@ export function createLoadingCoordinator(collections, options = {}) {
           controllers.forEach((controller) => controller.abort());
           if (preflight === task) preflight = null;
           const ready = plan.filter((job) => previewReady.has(job.url));
+          if (requireReady && !canceled && ready.length === plan.length) {
+            // Once the first screen is decoded, warm just two offscreen files
+            // during the iris, transferring bytes without any extra decoding.
+            const optional = (cover ? coverJobs() : previewJobs()).filter((job) => !previewReady.has(job.url)).slice(0, 2);
+            entryPlan = uniqueJobs([...plan, ...optional]);
+          }
           if (!destroyed) setStage('aperture');
-          resolve({ readyPhotoIds: ready.map((job) => job.photo.id), readyUrls: ready.map((job) => job.url), timedOut, canceled });
+          resolve({ readyPhotoIds: ready.map((job) => job.photo.id), readyUrls: ready.map((job) => job.url), failedPhotoIds: plan.filter((job) => !previewReady.has(job.url)).map((job) => job.photo.id), timedOut, canceled });
         },
       };
       preflight = task;
-      deadline = later(() => task.finish({ timedOut: true }), Math.max(0, Math.min(1000, Number(budgetMs) || 0)));
-      const first = plan.slice(0, 2).map(async (job) => {
-        if (previewReady.has(job.url)) return;
+      if (!requireReady) deadline = later(() => task.finish({ timedOut: true }), Math.max(0, Math.min(1000, Number(budgetMs) || 0)));
+      const load = async (job) => {
+        if (finished || previewReady.has(job.url)) return;
         const controller = new AbortController();
         controllers.push(controller);
+        const resourceDeadline = requireReady ? later(() => controller.abort(), 12000) : undefined;
         try {
           const image = await decodedImage(job.url, controller.signal, 'high');
           if (finished || controller.signal.aborted || preflight !== task) return;
           previewReady.add(job.url);
           retainPreview(job.url, image);
-        } catch { /* The deadline or the animation byte lane can take over. */ }
-      });
-      Promise.allSettled(first).then(() => task.finish());
+        } catch { /* Required failures are returned to the caller and keep the iris closed. */ }
+        finally { clearLater(resourceDeadline); }
+      };
+      if (requireReady) {
+        let next = 0;
+        const worker = async () => {
+          while (!finished && next < plan.length) await load(plan[next++]);
+        };
+        Promise.allSettled(Array.from({ length: Math.min(3, plan.length) }, worker)).then(() => task.finish());
+      } else {
+        Promise.allSettled(plan.slice(0, 2).map(load)).then(() => task.finish());
+      }
     });
   }
 
@@ -501,7 +517,7 @@ export function createLoadingCoordinator(collections, options = {}) {
 
   return {
     getPreviewSrc, getOriginalSrc, getCachedPreviewSrc,
-    isPreviewReady: (photo) => Boolean(getCachedPreviewSrc(photo)),
+    isPreviewReady: (photo, settings = {}) => previewReady.has(getPreviewSrc(photo, settings)),
     notifyPreviewLoaded,
     coverSettled: (photoOrId, url, image) => notifyPreviewLoaded(photoOrId, url || getPreviewSrc(typeof photoOrId === 'string' ? photosById.get(photoOrId) : photoOrId, { cover: true }), image),
     prepareEntry, animationStarted, animationFinished, enterCollection, transitionFinished,

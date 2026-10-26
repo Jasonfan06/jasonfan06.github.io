@@ -5,7 +5,7 @@
       "id": "coziness",
       "title": "Coziness",
       "folder": "Coziness",
-      "cover": "optimized/coziness/coziness-2-059728883e/1200.webp",
+      "cover": "optimized/covers-q76/coziness-059728883e/800.webp",
       "coverPhoto": {
         "id": "coziness-2",
         "title": "DSC00661",
@@ -36,6 +36,27 @@
             "width": 2000,
             "height": 1333,
             "byteSize": 272048
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/coziness-059728883e/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/coziness-059728883e/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 14718
+          },
+          {
+            "src": "optimized/covers-q76/coziness-059728883e/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 30696
+          },
+          {
+            "src": "optimized/covers-q76/coziness-059728883e/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 56400
           }
         ]
       },
@@ -104,6 +125,27 @@
               "width": 2000,
               "height": 1333,
               "byteSize": 272048
+            }
+          ],
+          "coverSrc": "optimized/covers-q76/coziness-059728883e/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/coziness-059728883e/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 14718
+            },
+            {
+              "src": "optimized/covers-q76/coziness-059728883e/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 30696
+            },
+            {
+              "src": "optimized/covers-q76/coziness-059728883e/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 56400
             }
           ]
         },
@@ -212,7 +254,7 @@
       "id": "half-covered-face",
       "title": "Half-covered Face",
       "folder": "Half-covered Face",
-      "cover": "optimized/half-covered-face/half-covered-face-2-3790f063c0/1200.webp",
+      "cover": "optimized/covers-q76/half-covered-face-3790f063c0/800.webp",
       "coverPhoto": {
         "id": "half-covered-face-2",
         "title": "DSC00717",
@@ -243,6 +285,27 @@
             "width": 2000,
             "height": 1333,
             "byteSize": 270398
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/half-covered-face-3790f063c0/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/half-covered-face-3790f063c0/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 15658
+          },
+          {
+            "src": "optimized/covers-q76/half-covered-face-3790f063c0/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 31896
+          },
+          {
+            "src": "optimized/covers-q76/half-covered-face-3790f063c0/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 56558
           }
         ]
       },
@@ -312,6 +375,27 @@
               "height": 1333,
               "byteSize": 270398
             }
+          ],
+          "coverSrc": "optimized/covers-q76/half-covered-face-3790f063c0/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/half-covered-face-3790f063c0/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 15658
+            },
+            {
+              "src": "optimized/covers-q76/half-covered-face-3790f063c0/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 31896
+            },
+            {
+              "src": "optimized/covers-q76/half-covered-face-3790f063c0/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 56558
+            }
           ]
         }
       ]
@@ -320,7 +404,7 @@
       "id": "overbearing",
       "title": "Overbearing",
       "folder": "Overbearing",
-      "cover": "optimized/overbearing/overbearing-1-29b6a5d34f/1200.webp",
+      "cover": "optimized/covers-q76/overbearing-29b6a5d34f/800.webp",
       "coverPhoto": {
         "id": "overbearing-1",
         "title": "DSC00981",
@@ -351,6 +435,27 @@
             "width": 2000,
             "height": 3000,
             "byteSize": 856702
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/overbearing-29b6a5d34f/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/overbearing-29b6a5d34f/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 9486
+          },
+          {
+            "src": "optimized/covers-q76/overbearing-29b6a5d34f/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 20932
+          },
+          {
+            "src": "optimized/covers-q76/overbearing-29b6a5d34f/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 39322
           }
         ]
       },
@@ -386,6 +491,27 @@
               "width": 2000,
               "height": 3000,
               "byteSize": 856702
+            }
+          ],
+          "coverSrc": "optimized/covers-q76/overbearing-29b6a5d34f/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/overbearing-29b6a5d34f/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 9486
+            },
+            {
+              "src": "optimized/covers-q76/overbearing-29b6a5d34f/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 20932
+            },
+            {
+              "src": "optimized/covers-q76/overbearing-29b6a5d34f/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 39322
             }
           ]
         },
@@ -428,7 +554,7 @@
       "id": "smoke",
       "title": "Smoke",
       "folder": "Smoke",
-      "cover": "optimized/smoke/smoke-2-7f6566b9de/1200.webp",
+      "cover": "optimized/covers-q76/smoke-7f6566b9de/800.webp",
       "coverPhoto": {
         "id": "smoke-2",
         "title": "DSC00796",
@@ -459,6 +585,27 @@
             "width": 2000,
             "height": 1467,
             "byteSize": 220646
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/smoke-7f6566b9de/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/smoke-7f6566b9de/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 11516
+          },
+          {
+            "src": "optimized/covers-q76/smoke-7f6566b9de/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 24414
+          },
+          {
+            "src": "optimized/covers-q76/smoke-7f6566b9de/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 44740
           }
         ]
       },
@@ -528,6 +675,27 @@
               "height": 1467,
               "byteSize": 220646
             }
+          ],
+          "coverSrc": "optimized/covers-q76/smoke-7f6566b9de/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/smoke-7f6566b9de/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 11516
+            },
+            {
+              "src": "optimized/covers-q76/smoke-7f6566b9de/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 24414
+            },
+            {
+              "src": "optimized/covers-q76/smoke-7f6566b9de/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 44740
+            }
           ]
         },
         {
@@ -569,7 +737,7 @@
       "id": "flowers-30ad9957",
       "title": "Flowers",
       "folder": "Flowers",
-      "cover": "optimized/flowers-30ad9957/flowers-30ad9957-2-1b417e0e5f/1200.webp",
+      "cover": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/800.webp",
       "coverPhoto": {
         "id": "flowers-30ad9957-2",
         "title": "DSC04763",
@@ -600,6 +768,27 @@
             "width": 2000,
             "height": 1333,
             "byteSize": 74800
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 5392
+          },
+          {
+            "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 10214
+          },
+          {
+            "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 16542
           }
         ]
       },
@@ -668,6 +857,27 @@
               "width": 2000,
               "height": 1333,
               "byteSize": 74800
+            }
+          ],
+          "coverSrc": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 5392
+            },
+            {
+              "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 10214
+            },
+            {
+              "src": "optimized/covers-q76/flowers-30ad9957-1b417e0e5f/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 16542
             }
           ]
         },
@@ -844,7 +1054,7 @@
       "id": "bird-and-shadow-379e49e3",
       "title": "Bird and Shadow",
       "folder": "Bird and Shadow",
-      "cover": "optimized/bird-and-shadow-379e49e3/bird-and-shadow-379e49e3-1-4740303e0f/1200.webp",
+      "cover": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/800.webp",
       "coverPhoto": {
         "id": "bird-and-shadow-379e49e3-1",
         "title": "DSC07960",
@@ -876,6 +1086,27 @@
             "width": 2000,
             "height": 1333,
             "byteSize": 140828
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 6212
+          },
+          {
+            "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 13662
+          },
+          {
+            "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 25670
           }
         ]
       },
@@ -912,6 +1143,27 @@
               "width": 2000,
               "height": 1333,
               "byteSize": 140828
+            }
+          ],
+          "coverSrc": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 6212
+            },
+            {
+              "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 13662
+            },
+            {
+              "src": "optimized/covers-q76/bird-and-shadow-379e49e3-4740303e0f/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 25670
             }
           ]
         },
@@ -957,7 +1209,7 @@
       "id": "nap-2a821867",
       "title": "Nap",
       "folder": "Nap",
-      "cover": "optimized/nap-2a821867/nap-2a821867-1-8187c58938/1200.webp",
+      "cover": "optimized/covers-q76/nap-2a821867-8187c58938/800.webp",
       "coverPhoto": {
         "id": "nap-2a821867-1",
         "title": "DSC07008",
@@ -989,6 +1241,27 @@
             "width": 2000,
             "height": 3000,
             "byteSize": 1797292
+          }
+        ],
+        "coverSrc": "optimized/covers-q76/nap-2a821867-8187c58938/800.webp",
+        "coverVariants": [
+          {
+            "src": "optimized/covers-q76/nap-2a821867-8187c58938/480.webp",
+            "width": 480,
+            "height": 320,
+            "byteSize": 32102
+          },
+          {
+            "src": "optimized/covers-q76/nap-2a821867-8187c58938/800.webp",
+            "width": 800,
+            "height": 533,
+            "byteSize": 71224
+          },
+          {
+            "src": "optimized/covers-q76/nap-2a821867-8187c58938/1200.webp",
+            "width": 1200,
+            "height": 800,
+            "byteSize": 134372
           }
         ]
       },
@@ -1025,6 +1298,27 @@
               "width": 2000,
               "height": 3000,
               "byteSize": 1797292
+            }
+          ],
+          "coverSrc": "optimized/covers-q76/nap-2a821867-8187c58938/800.webp",
+          "coverVariants": [
+            {
+              "src": "optimized/covers-q76/nap-2a821867-8187c58938/480.webp",
+              "width": 480,
+              "height": 320,
+              "byteSize": 32102
+            },
+            {
+              "src": "optimized/covers-q76/nap-2a821867-8187c58938/800.webp",
+              "width": 800,
+              "height": 533,
+              "byteSize": 71224
+            },
+            {
+              "src": "optimized/covers-q76/nap-2a821867-8187c58938/1200.webp",
+              "width": 1200,
+              "height": 800,
+              "byteSize": 134372
             }
           ]
         }

@@ -25,7 +25,7 @@ function easeInOut(value) {
 }
 
 /** A decorative, nine-blade iris reveal. Safe to replay with PortfolioAperture.play(). */
-export default function Aperture({ brand = 'Canoe', ready = true, onStart, onComplete }) {
+export default function Aperture({ brand = 'Canoe', ready = true, error = false, onRetry, onStart, onComplete }) {
   const [run, setRun] = useState(0);
   const [visible, setVisible] = useState(true);
   const blades = useRef([]);
@@ -105,7 +105,7 @@ export default function Aperture({ brand = 'Canoe', ready = true, onStart, onCom
   if (!visible) return null;
 
   return (
-    <div className="aperture-intro" aria-hidden="true" style={{ animationPlayState: ready ? 'running' : 'paused' }}>
+    <div className="aperture-intro" data-phase={ready ? 'opening' : error ? 'failed' : 'preparing'} aria-hidden={!error} style={{ animationPlayState: ready ? 'running' : 'paused' }}>
       <svg
         className="aperture-intro__blades"
         viewBox="-100 -100 200 200"
@@ -126,6 +126,10 @@ export default function Aperture({ brand = 'Canoe', ready = true, onStart, onCom
       </svg>
       <div className="aperture-intro__signature" ref={wordmark}>
         <span>{brand}</span>
+        {error && <div className="aperture-intro__retry" role="status">
+          <p>The photographs could not load.</p>
+          <button type="button" onClick={onRetry}>Retry</button>
+        </div>}
       </div>
     </div>
   );

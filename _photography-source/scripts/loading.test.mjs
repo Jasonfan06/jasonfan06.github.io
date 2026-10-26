@@ -145,7 +145,7 @@ test('hiding the tab preserves a requested original and resumes background work 
   loader.destroy();
 });
 
-function entryFixture() {
+function entryFixture({ count = 4, covers = false, manualDecode = false } = {}) {
   const images = [];
   const transfers = [];
   const decoded = [];
@@ -156,7 +156,7 @@ function entryFixture() {
     constructor() { this.naturalWidth = 600; this.naturalHeight = 400; }
     set src(value) { this.value = value; if (value) images.push(this); }
     get src() { return this.value; }
-    decode() { decoded.push(this.src); return Promise.resolve(); }
+    decode() { decoded.push(this.src); return manualDecode ? new Promise((resolve) => { this.finishDecode = resolve; }) : Promise.resolve(); }
   }
   const environment = {
     document: page, innerWidth: 1200, innerHeight: 900, devicePixelRatio: 1,
@@ -164,9 +164,10 @@ function entryFixture() {
     requestIdleCallback(callback) { const id = ++idleId; idle.set(id, callback); return id; },
     cancelIdleCallback(id) { idle.delete(id); },
   };
-  const photos = ['a', 'b', 'c', 'd'].map((id) => ({
+  const photos = 'abcdef'.slice(0, count).split('').map((id) => ({
     id, width: 600, height: 400, src: `optimized/${id}.webp`, fullSrc: `originals/${id}.jpg`,
     variants: [{ src: `optimized/${id}.webp`, width: 600, height: 400 }],
+    ...(covers ? { coverVariants: [{ src: `optimized/covers/${id}/800.webp`, width: 800, height: 533 }] } : {}),
   }));
   const loader = createLoadingCoordinator([{ id: 'set', photos, coverPhoto: photos[2] }], {
     environment,
@@ -240,4 +241,51 @@ test('entry budget releases startup and reprepare/destroy settle superseded warm
   loader.destroy();
   assert.equal((await replacement).canceled, true);
   assert.equal(transfers.length, 1);
+});
+
+test('required startup waits for every visible cover and its decode beyond the old time and image limits', async () => {
+  const { loader, photos, images, transfers, decoded, tick } = entryFixture({ count: 6, covers: true, manualDecode: true });
+  let resolved = false;
+  const prepared = loader.prepareEntry({ photoIds: photos.map((photo) => photo.id), cover: true, requireReady: true, budgetMs: 1 })
+    .then((result) => { resolved = true; return result; });
+  assert.equal(images.length, 3, 'only three small cover loads run concurrently');
+  assert.ok(images.every((image) => image.src.includes('/covers/')));
+  await new Promise((resolve) => setTimeout(resolve, 340));
+  assert.equal(resolved, false, 'the former 320ms deadline must never release a required preview');
+  images.forEach((image) => image.onload());
+  await tick();
+  assert.equal(resolved, false, 'download alone is insufficient; decode must finish');
+  assert.equal(images.length, 3);
+  images.slice(0, 3).forEach((image) => image.finishDecode());
+  await tick();
+  assert.equal(images.length, 6, 'all visible covers are included, even beyond four');
+  assert.equal(resolved, false);
+  images.slice(3).forEach((image) => image.onload());
+  await tick();
+  images.slice(3).forEach((image) => image.finishDecode());
+  const result = await prepared;
+  assert.deepEqual(result.readyPhotoIds, photos.map((photo) => photo.id));
+  assert.deepEqual(result.failedPhotoIds, []);
+  assert.equal(result.timedOut, false);
+  assert.equal(decoded.length, 6);
+  assert.equal(transfers.length, 0, 'no original or optional background work competes with startup');
+  assert.ok(loader.isPreviewReady(photos[0], { cover: true }));
+  assert.equal(loader.isPreviewReady(photos[0]), false);
+  assert.equal(loader.getCachedPreviewSrc(photos[0]), undefined, 'cropped covers must never replace uncropped magnified previews');
+  loader.destroy();
+});
+
+test('a required preview failure is reported and retry only requests the missing image', async () => {
+  const { loader, images, tick } = entryFixture();
+  const first = loader.prepareEntry({ photoIds: ['a', 'b'], requireReady: true });
+  images[0].onerror();
+  images[1].onload();
+  assert.deepEqual((await first).failedPhotoIds, ['a']);
+  const retry = loader.prepareEntry({ photoIds: ['a', 'b'], requireReady: true });
+  await tick();
+  assert.equal(images.length, 3);
+  assert.match(images[2].src, /a\.webp$/);
+  images[2].onload();
+  assert.deepEqual((await retry).readyPhotoIds, ['a', 'b']);
+  loader.destroy();
 });

@@ -16,14 +16,15 @@ export function validateGallery(value) {
     const photos = collection.photos.map((photo) => {
       if (typeof photo.id !== 'string' || !safeImagePath(photo.src) || !safeImagePath(photo.fullSrc ?? photo.src) ||
           !Number.isFinite(photo.width) || photo.width <= 0 || !Number.isFinite(photo.height) || photo.height <= 0 ||
-          (photo.variants && (!Array.isArray(photo.variants) || photo.variants.some((variant) =>
+          (photo.coverSrc && !safeImagePath(photo.coverSrc)) ||
+          [photo.variants, photo.coverVariants].some((variants) => variants && (!Array.isArray(variants) || variants.some((variant) =>
             !safeImagePath(variant.src) || !Number.isFinite(variant.width) || variant.width <= 0)))) {
         throw new Error('Invalid photograph metadata.');
       }
       return photo;
     });
     const coverPhoto = photos.find((photo) => photo.id === collection.coverPhoto?.id || photo.src === collection.cover) ?? photos[0];
-    return { ...collection, photos, coverPhoto, cover: coverPhoto.src, count: photos.length };
+    return { ...collection, photos, coverPhoto, cover: coverPhoto.coverSrc ?? coverPhoto.src, count: photos.length };
   });
 }
 

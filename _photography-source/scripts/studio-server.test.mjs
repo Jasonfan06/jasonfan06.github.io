@@ -93,6 +93,9 @@ test('original JPEG bytes and EXIF remain exact through publishing, serving, and
   const photo = result.collection.photos[0];
   assert.equal(photo.original, true); assert.notEqual(photo.src, photo.fullSrc); assert.equal(photo.variants.length, 1);
   assert.equal(result.collection.coverPhoto.src, photo.src);
+  assert.equal(result.collection.cover, photo.coverSrc);
+  assert.notEqual(photo.coverSrc, photo.src);
+  assert.deepEqual(photo.coverVariants.map(({width,height}) => ({width,height})), [{width:2,height:1}]);
   assert.match(photo.src, /^optimized\/evening-light-[a-f0-9-]+\/[a-f0-9-]+\/2\.webp$/);
   assert.deepEqual(photo.variants.map(({width,height}) => ({width,height})), [{width:2,height:3}]);
   assert.equal(photo.width, 2); assert.equal(photo.height, 3); // Oriented display dimensions; stored JPEG remains unchanged.
@@ -114,6 +117,11 @@ test('original JPEG bytes and EXIF remain exact through publishing, serving, and
   assert.equal(display.length, photo.variants[0].byteSize);
   assert.ok((await remoteFile(`photography/${photo.src}`, true)).stdout.equals(display));
   assert.ok((await remoteFile(`_photography-source/public/${photo.src}`, true)).stdout.equals(display));
+  const cover = Buffer.from(await (await fetch(`${f.origin}/${photo.coverSrc}`)).arrayBuffer());
+  assert.deepEqual(webpDimensions(cover), {width:2,height:1});
+  assert.equal(cover.length, photo.coverVariants[0].byteSize);
+  assert.ok((await remoteFile(`photography/${photo.coverSrc}`, true)).stdout.equals(cover));
+  assert.ok((await remoteFile(`_photography-source/public/${photo.coverSrc}`, true)).stdout.equals(cover));
   assert.equal((await (await fetch(`${f.origin}/gallery.json`)).json()).collections.length, 2);
   const retry = await f.send('/api/sets', payload()); assert.equal(retry.status, 201); assert.equal((await retry.json()).commit, result.commit);
   assert.equal(JSON.parse((await remoteFile('photography/gallery.json')).stdout).collections.length, 2);
