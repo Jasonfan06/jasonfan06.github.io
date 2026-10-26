@@ -144,3 +144,100 @@ test('hiding the tab preserves a requested original and resumes background work 
   assert.ok(images.length > countWhileHidden, 'cover/preview work resumes after returning');
   loader.destroy();
 });
+
+function entryFixture() {
+  const images = [];
+  const transfers = [];
+  const decoded = [];
+  const idle = new Map();
+  let idleId = 0;
+  const page = { baseURI: 'https://example.test/', hidden: false, addEventListener(){}, removeEventListener(){} };
+  class EntryImage {
+    constructor() { this.naturalWidth = 600; this.naturalHeight = 400; }
+    set src(value) { this.value = value; if (value) images.push(this); }
+    get src() { return this.value; }
+    decode() { decoded.push(this.src); return Promise.resolve(); }
+  }
+  const environment = {
+    document: page, innerWidth: 1200, innerHeight: 900, devicePixelRatio: 1,
+    navigator: {}, Image: EntryImage, setTimeout, clearTimeout,
+    requestIdleCallback(callback) { const id = ++idleId; idle.set(id, callback); return id; },
+    cancelIdleCallback(id) { idle.delete(id); },
+  };
+  const photos = ['a', 'b', 'c', 'd'].map((id) => ({
+    id, width: 600, height: 400, src: `optimized/${id}.webp`, fullSrc: `originals/${id}.jpg`,
+    variants: [{ src: `optimized/${id}.webp`, width: 600, height: 400 }],
+  }));
+  const loader = createLoadingCoordinator([{ id: 'set', photos, coverPhoto: photos[2] }], {
+    environment,
+    fetch: async (url, options) => {
+      const transfer = { url, options, aborted: false };
+      transfers.push(transfer);
+      const body = new Promise((resolve, reject) => {
+        transfer.finish = () => resolve(new ArrayBuffer(1));
+        options.signal.addEventListener('abort', () => { transfer.aborted = true; reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
+      });
+      return { ok: true, arrayBuffer: () => body };
+    },
+  });
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+  const nextIdle = async () => { const callbacks = [...idle.values()]; idle.clear(); callbacks.forEach((callback) => callback()); await tick(); await tick(); };
+  return { loader, photos, images, transfers, decoded, tick, nextIdle };
+}
+
+test('entry warm-up decodes two critical previews, then animation transfers previews one at a time without decoding', async () => {
+  const { loader, photos, images, transfers, decoded, tick, nextIdle } = entryFixture();
+  assert.equal(images.length, 0);
+  const prepared = loader.prepareEntry({ photoIds: photos.map((photo) => photo.id), budgetMs: 320 });
+  assert.equal(images.length, 2);
+  assert.equal(transfers.length, 0);
+  assert.deepEqual(images.map((image) => image.src), photos.slice(0, 2).map((photo) => loader.getPreviewSrc(photo)));
+  images[0].onload(); images[1].onload();
+  const result = await prepared;
+  assert.equal(result.timedOut, false);
+  assert.deepEqual(result.readyPhotoIds, ['a', 'b']);
+  assert.equal(decoded.length, 2);
+  loader.animationStarted();
+  await nextIdle();
+  assert.equal(transfers.length, 1);
+  assert.equal(transfers[0].options.priority, 'low');
+  assert.equal(transfers[0].url, loader.getPreviewSrc(photos[2]));
+  assert.equal(images.length, 2);
+  assert.equal(decoded.length, 2);
+  transfers[0].finish(); await tick(); await nextIdle();
+  assert.equal(transfers.length, 2);
+  assert.equal(transfers[1].url, loader.getPreviewSrc(photos[3]));
+  assert.ok(transfers.every((transfer) => transfer.url.includes('/optimized/')));
+  assert.equal(images.length, 2);
+  assert.equal(decoded.length, 2);
+  loader.animationFinished(); await tick();
+  assert.equal(transfers[1].aborted, true);
+  assert.equal(images.length, 3, 'normal cover decode resumes after the aperture finishes');
+  assert.equal(images[2].src, loader.getPreviewSrc(photos[2], { cover: true }));
+  assert.equal(loader.isPreviewReady(photos[2]), false, 'byte-only warm-up must not claim the image is decoded');
+  loader.destroy();
+});
+
+test('entry budget releases startup and reprepare/destroy settle superseded warm-ups', async () => {
+  const { loader, images, transfers, decoded, tick, nextIdle } = entryFixture();
+  const bounded = await loader.prepareEntry({ photoIds: ['a', 'b', 'c', 'd'], budgetMs: 8 });
+  assert.equal(bounded.timedOut, true);
+  assert.deepEqual(bounded.readyPhotoIds, []);
+  assert.ok(images.every((image) => image.src === ''));
+  assert.equal(decoded.length, 0);
+  assert.equal(transfers.length, 0);
+  loader.animationStarted();
+  await nextIdle();
+  assert.match(transfers[0].url, /optimized\/a\.webp$/);
+  assert.equal(images.length, 2);
+  assert.equal(decoded.length, 0);
+  loader.animationFinished();
+  await tick();
+  assert.equal(transfers[0].aborted, true);
+  const old = loader.prepareEntry({ photoIds: ['a'], budgetMs: 500 });
+  const replacement = loader.prepareEntry({ photoIds: ['b'], budgetMs: 500 });
+  assert.equal((await old).canceled, true);
+  loader.destroy();
+  assert.equal((await replacement).canceled, true);
+  assert.equal(transfers.length, 1);
+});

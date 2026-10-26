@@ -9,12 +9,15 @@ const asset = (path = '') => `${base}${path.replace(/^\//, '')}`;
 const preventPhotoAction = (event) => event.preventDefault();
 const photoGuards = { onContextMenu: preventPhotoAction, onDragStart: preventPhotoAction, onCopy: preventPhotoAction, onCut: preventPhotoAction };
 
-function Photo({ photo, loader, canLoad, cover = false, eager = false }) {
+function Photo({ photo, loader, canLoad, prepared = false, cover = false, eager = false }) {
   const image = useRef(null);
   const [nearViewport, setNearViewport] = useState(false);
   const [loadedSource, setLoadedSource] = useState(null);
-  const active = canLoad && (cover || eager || nearViewport);
+  const warmed = !canLoad && prepared && loader.isPreviewReady(photo);
+  const active = (canLoad && (cover || eager || nearViewport)) || warmed;
   const source = loader.getPreviewSrc(photo, { cover });
+
+  useEffect(() => { if (warmed) setNearViewport(true); }, [warmed]);
 
   useEffect(() => {
     if (!canLoad || cover || eager || nearViewport) return undefined;
@@ -34,6 +37,7 @@ function Photo({ photo, loader, canLoad, cover = false, eager = false }) {
   };
 
   return <img ref={image} className={`portfolio-photo${active && loadedSource === source ? '' : ' is-waiting'}`}
+    data-photo-id={photo.id}
     draggable={false} {...photoGuards} src={active ? source : undefined}
     width={photo.width} height={photo.height} style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
     loading="eager" fetchPriority={cover || eager ? 'high' : 'auto'} decoding="async"
@@ -45,6 +49,8 @@ export default function App({ collections = defaultCollections }) {
   const [collection, setCollection] = useState(collectionFromHash);
   const [photoIndex, setPhotoIndex] = useState(null);
   const [apertureDone, setApertureDone] = useState(false);
+  const [entryPrepared, setEntryPrepared] = useState(() => new Set());
+  const [apertureReady, setApertureReady] = useState(false);
   const loader = useMemo(() => {
     const coordinator = createLoadingCoordinator(collections, { asset });
     const initialCollection = collectionFromHash()?.id ?? null;
@@ -59,6 +65,23 @@ export default function App({ collections = defaultCollections }) {
   const heading = useRef(null);
   const returningTo = useRef(null);
   const navigating = useRef(false);
+
+  useEffect(() => {
+    let obsolete = false;
+    let frame;
+    const candidates = [...document.querySelectorAll('.cover-image img, .gallery-photo img')]
+      .map((image) => ({ id: image.dataset.photoId, rect: image.getBoundingClientRect() }));
+    const visible = candidates.filter(({ rect }) => rect.bottom > 0 && rect.top < window.innerHeight + 100)
+      .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left);
+    const photoIds = (visible.length ? visible : candidates).slice(0, 4).map(({ id }) => id);
+    loader.prepareEntry({ photoIds, cover: !collection, budgetMs: 320 }).catch(() => ({ readyPhotoIds: [] })).then((result) => {
+      if (obsolete) return;
+      setEntryPrepared(new Set(result.readyPhotoIds));
+      // Let already-decoded previews mount behind the closed iris before it moves.
+      frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => { if (!obsolete) setApertureReady(true); }); });
+    });
+    return () => { obsolete = true; cancelAnimationFrame(frame); };
+  }, [loader]);
 
   useEffect(() => {
     const sync = () => {
@@ -111,9 +134,9 @@ export default function App({ collections = defaultCollections }) {
   const nextCollection = collection ? collections[(collections.indexOf(collection) + 1) % collections.length] : null;
 
   return <>
-    <Aperture brand="Canoe" onStart={apertureStarted} onComplete={apertureFinished} />
+    <Aperture brand="Canoe" ready={apertureReady} onStart={apertureStarted} onComplete={apertureFinished} />
     <a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to photographs</a>
-    <header className="site-header page-width">
+    <header className="site-header page-width" inert={!apertureDone}>
       <a className="brand" href={base} onClick={home} aria-label="Canoe photography home">
         <ApertureIcon size={23} strokeWidth={1.25} aria-hidden="true" /><span>Canoe</span>
       </a>
@@ -129,7 +152,7 @@ export default function App({ collections = defaultCollections }) {
             {...photoGuards}
             type="button" aria-label={`View ${collection.title}, photograph ${index + 1} of ${collection.count}`}
             onClick={() => setPhotoIndex(index)}>
-            <Photo photo={photo} loader={loader} canLoad={apertureDone} eager={index < 2} />
+            <Photo photo={photo} loader={loader} canLoad={apertureDone} prepared={entryPrepared.has(photo.id)} eager={index < 2} />
           </button>)}
         </div>
         {nextCollection && collections.length > 1 && <a className="next-set" href={`#${nextCollection.id}`} aria-label={`Next set: ${nextCollection.title}`} onClick={() => { returningTo.current = nextCollection.id; loader.enterCollection(nextCollection.id); }}>
@@ -142,7 +165,7 @@ export default function App({ collections = defaultCollections }) {
             {...photoGuards}
             href={`#${item.id}`} onClick={(event) => { event.preventDefault(); openCollection(item); }}
             aria-label={`Open ${item.title}, ${item.count} photographs`}>
-            <span className="cover-image"><Photo photo={item.coverPhoto ?? item.photos[0]} loader={loader} canLoad={apertureDone} cover eager={index < 2} />
+            <span className="cover-image"><Photo photo={item.coverPhoto ?? item.photos[0]} loader={loader} canLoad={apertureDone} prepared={entryPrepared.has((item.coverPhoto ?? item.photos[0]).id)} cover eager={index < 2} />
               <span className="cover-title-bar"><span className="cover-title">{item.title}</span><span className="cover-arrow"><ArrowUpRight size={24} strokeWidth={1.2} /></span></span>
             </span>
           </a>)}

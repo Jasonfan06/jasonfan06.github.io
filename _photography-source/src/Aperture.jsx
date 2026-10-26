@@ -25,7 +25,7 @@ function easeInOut(value) {
 }
 
 /** A decorative, nine-blade iris reveal. Safe to replay with PortfolioAperture.play(). */
-export default function Aperture({ brand = 'Canoe', onStart, onComplete }) {
+export default function Aperture({ brand = 'Canoe', ready = true, onStart, onComplete }) {
   const [run, setRun] = useState(0);
   const [visible, setVisible] = useState(true);
   const blades = useRef([]);
@@ -47,7 +47,7 @@ export default function Aperture({ brand = 'Canoe', onStart, onComplete }) {
   }, []);
 
   useEffect(() => {
-    if (!visible) return undefined;
+    if (!visible || !ready) return undefined;
     callbacks.current.onStart?.();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setVisible(false);
@@ -100,12 +100,12 @@ export default function Aperture({ brand = 'Canoe', onStart, onComplete }) {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(fallback);
     };
-  }, [run, visible]);
+  }, [run, visible, ready]);
 
   if (!visible) return null;
 
   return (
-    <div className="aperture-intro" aria-hidden="true">
+    <div className="aperture-intro" aria-hidden="true" style={{ animationPlayState: ready ? 'running' : 'paused' }}>
       <svg
         className="aperture-intro__blades"
         viewBox="-100 -100 200 200"

@@ -34,6 +34,13 @@ export function createLoadingCoordinator(collections, options = {}) {
   let foregroundId = 0;
   let stage = 'aperture';
   let resizeTimer;
+  let entryPlan = [];
+  let preflight = null;
+  let entryAnimationAllowed = false;
+  let entryByteController = null;
+  let entryByteRunning = false;
+  let entryByteEpoch = 0;
+  const entryBytesFetched = new Set();
 
   const absolute = (value) => {
     if (!value) return undefined;
@@ -111,6 +118,7 @@ export function createLoadingCoordinator(collections, options = {}) {
       originalsLoaded: originalReady.size,
       originalCount: originalJobs().length,
       foregroundReady: Boolean(foreground?.ready),
+      preparingEntry: Boolean(preflight),
     };
   }
   function emit() {
@@ -167,6 +175,95 @@ export function createLoadingCoordinator(collections, options = {}) {
       signal.addEventListener('abort', aborted, { once: true });
       if (signal.aborted) { aborted(); return; }
       image.src = url;
+    });
+  }
+
+  function cancelPreflight() { preflight?.finish({ canceled: true }); }
+
+  function stopEntryBytes() {
+    entryByteEpoch += 1;
+    entryByteController?.abort();
+    entryByteController = null;
+  }
+
+  async function runEntryBytes(runEpoch) {
+    // This lane transfers compressed preview bytes only. It creates no Image and
+    // never calls decode, leaving animation frames and raster work undisturbed.
+    for (const job of entryPlan) {
+      if (!entryAnimationAllowed || !animating || destroyed || hidden() || runEpoch !== entryByteEpoch) return;
+      if (previewReady.has(job.url) || entryBytesFetched.has(job.url)) continue;
+      const controller = new AbortController();
+      entryByteController = controller;
+      try {
+        await idleTurn(controller.signal);
+        if (controller.signal.aborted || !entryAnimationAllowed || !animating || runEpoch !== entryByteEpoch) return;
+        const response = await fetchResource(job.url, { priority: 'low', cache: 'force-cache', signal: controller.signal });
+        if (!response.ok) throw new Error('A preview could not be warmed.');
+        await drainOriginal(response, controller.signal);
+        if (!controller.signal.aborted) entryBytesFetched.add(job.url);
+      } catch (error) {
+        if (controller.signal.aborted || error?.name === 'AbortError') return;
+        // The ordinary post-animation preview pipeline can retry failures.
+      } finally {
+        if (entryByteController === controller) entryByteController = null;
+      }
+    }
+  }
+
+  function startEntryBytes() {
+    if (entryByteRunning || !entryAnimationAllowed || !animating || destroyed || hidden() || isSaveData()) return;
+    entryByteRunning = true;
+    const runEpoch = entryByteEpoch;
+    runEntryBytes(runEpoch).finally(() => {
+      entryByteRunning = false;
+      if (runEpoch !== entryByteEpoch) startEntryBytes();
+    });
+  }
+
+  function prepareEntry({ photoIds = [], cover = false, budgetMs = 320 } = {}) {
+    cancelPreflight();
+    entryAnimationAllowed = false;
+    stopEntryBytes();
+    interruptBackground();
+    cancelForeground();
+    animating = true;
+    const seen = new Set();
+    entryPlan = photoIds.slice(0, 4).map((id) => photosById.get(id)).filter(Boolean)
+      .map((photo) => ({ photo, url: getPreviewSrc(photo, { cover }) }))
+      .filter((job) => job.url && !seen.has(job.url) && seen.add(job.url));
+    if (destroyed) return Promise.resolve({ readyPhotoIds: [], readyUrls: [], timedOut: false, canceled: true });
+    setStage('entry');
+    return new Promise((resolve) => {
+      const plan = entryPlan;
+      const controllers = [];
+      let deadline;
+      let finished = false;
+      const task = {
+        finish({ timedOut = false, canceled = false } = {}) {
+          if (finished) return;
+          finished = true;
+          clearLater(deadline);
+          controllers.forEach((controller) => controller.abort());
+          if (preflight === task) preflight = null;
+          const ready = plan.filter((job) => previewReady.has(job.url));
+          if (!destroyed) setStage('aperture');
+          resolve({ readyPhotoIds: ready.map((job) => job.photo.id), readyUrls: ready.map((job) => job.url), timedOut, canceled });
+        },
+      };
+      preflight = task;
+      deadline = later(() => task.finish({ timedOut: true }), Math.max(0, Math.min(1000, Number(budgetMs) || 0)));
+      const first = plan.slice(0, 2).map(async (job) => {
+        if (previewReady.has(job.url)) return;
+        const controller = new AbortController();
+        controllers.push(controller);
+        try {
+          const image = await decodedImage(job.url, controller.signal, 'high');
+          if (finished || controller.signal.aborted || preflight !== task) return;
+          previewReady.add(job.url);
+          retainPreview(job.url, image);
+        } catch { /* The deadline or the animation byte lane can take over. */ }
+      });
+      Promise.allSettled(first).then(() => task.finish());
     });
   }
 
@@ -342,15 +439,27 @@ export function createLoadingCoordinator(collections, options = {}) {
 
   function animationStarted() {
     animating = true;
+    cancelPreflight();
     interruptBackground();
     cancelForeground();
     setStage('aperture');
+    entryAnimationAllowed = true;
+    startEntryBytes();
   }
-  function animationFinished() { animating = false; emit(); kick(); }
+  function animationFinished() {
+    entryAnimationAllowed = false;
+    stopEntryBytes();
+    cancelPreflight();
+    animating = false;
+    emit();
+    kick();
+  }
   function enterCollection(id = null) {
     selectedId = id;
     transitioning = true;
     interruptBackground();
+    entryAnimationAllowed = false;
+    stopEntryBytes();
     cancelForeground();
     failed.clear();
     setStage('transition');
@@ -370,10 +479,11 @@ export function createLoadingCoordinator(collections, options = {}) {
   function visibilityChanged() {
     interruptBackground();
     if (hidden()) {
+      stopEntryBytes();
       // Keep the viewer's explicitly requested image alive. Its decode promise is
       // still owned by the mounted viewer; only optional background work pauses.
       setStage('paused');
-    } else kick();
+    } else { startEntryBytes(); kick(); }
   }
   function refresh() {
     if (destroyed) return;
@@ -394,12 +504,15 @@ export function createLoadingCoordinator(collections, options = {}) {
     isPreviewReady: (photo) => Boolean(getCachedPreviewSrc(photo)),
     notifyPreviewLoaded,
     coverSettled: (photoOrId, url, image) => notifyPreviewLoaded(photoOrId, url || getPreviewSrc(typeof photoOrId === 'string' ? photosById.get(photoOrId) : photoOrId, { cover: true }), image),
-    animationStarted, animationFinished, enterCollection, transitionFinished,
+    prepareEntry, animationStarted, animationFinished, enterCollection, transitionFinished,
     loadOriginal, closePhoto, refresh, snapshot,
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      entryAnimationAllowed = false;
+      cancelPreflight();
+      stopEntryBytes();
       interruptBackground();
       cancelForeground();
       clearLater(resizeTimer);
